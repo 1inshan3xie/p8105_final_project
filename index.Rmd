@@ -1,0 +1,17 @@
+---
+title: "Data-Driven Insights for Community Safety in Los Angeles: Analyzing Crime Patterns and Trends in Recent Years"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+### Introduction
+
+```{r, echo=FALSE, out.width="60%", fig.align = 'center'}
+knitr::include_graphics("./TrueCrime.jpeg")
+```
+<center style="font-size: 10px;"> Photo from:  https://uhighmidway.com/11560/arts/true-crime-genre-grows-in-popularity/ </center>
+
+
+### Screen cast

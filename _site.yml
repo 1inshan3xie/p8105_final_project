@@ -1,0 +1,29 @@
+name: "Data-Driven Insights for Community Safety in Los Angeles: Analyzing Crime Patterns and Trends in Recent Years"
+output_dir: "."
+navbar:
+  title: "Home"
+  left:
+    - text: About
+      menu:
+      - text: "About us"
+        href: authors.html
+      - text: "About our project"
+        href: report.html
+  right:
+    - text: Analyze
+      menu:
+      - text: "Victim Demographics"
+        href: victim.html
+      - text: "Time Trend"
+        href: time.html
+      - text: "Location"
+        href: location.html
+    - text: "Prediction"
+      href: prediction.html
+    - text: "Shiny App"
+      href: 
+    - icon: fa-github fa-lg
+      href: https://github.com/tingyusally/Final-Project
+output:
+  html_document:
+    theme: readable
