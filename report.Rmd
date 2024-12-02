@@ -1,30 +1,62 @@
 ---
-title: "report"
-author: "Tingyu Qian"
-date: "2024-11-20"
-output: html_document
+title: "Data-Driven Insights for Community Safety in Los Angeles: Analyzing Crime Patterns and Trends in Recent Years"
+author: "Yunjia Liu(yl5830), Linshan Xie(lx2346), Jianming Wang(jw4693), Yuwei Xia(yx2953), Tingyu Qian(tq2171)"
+date: "2024-12-02"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+\
 
-## R Markdown
+## Motivation
+Los Angeles is a city of vibrant diversity and a lively urban landscape—but it’s also a city where the dynamics of crime can vary widely across neighborhoods, demographic groups, and even times of day. For law enforcement, policymakers, and community members alike, understanding these complex crime patterns is key to fostering safer and more resilient communities.\
+Our project dives into the Los Angeles Police Department crime dataset to uncover the "who, what, where, and when" of crime across LA's diverse neighborhoods. We're on a mission to decode the patterns of crime by exploring how different demographics, time frames, and locations shape the city's unique crime profile. Whether it's catching late-night trends, uncovering hotspots, or spotlighting demographic factors, we’re here to map the hidden story of LA’s crime scene and uncover what drives certain areas' steady patterns—or sudden disruptions!
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+\
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Related work
 
-```{r cars}
-summary(cars)
-```
 
-## Including Plots
 
-You can also embed plots, for example:
+## Initial questions
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Data
+The source data set contained 982638 observations and 28 variables. After the removal of observations with missing data, the "clean" data set used for site analyses had 2,824 observations and 36 variables. Variables for `day`, `month`, `year`, `date_assembled`, and `name` were added to the final data set after some manipulation was done to adjust the date variable. The name variable was created by randomly assigning squirrels names from an R generated list of first and last squirrel names. The `unique_squirrel_id` variable is a character variable of 11 values and characters, so it could be a mouthful when trying to consider individual observations. We also believe each squirrel deserves a fun name. The data used was collected between 2018-10-06 and 2018-10-20.
+
+The final data used for analysis, saved [here](https://github.com/fish-carolyn/p8105_squirrel_final.git), contains the following variables:\
+-   `x`: Longitude.
+-   `y`: Latitude.
+-   `unique_squirrel_id`: Identification tag for each squirrel sightings. The tag is comprised of "Hectare ID" + "Shift" + "Date" + "Hectare Squirrel Number."
+-   `hectare`: ID tag, which is derived from the hectare grid used to divide and count the park area. One axis that runs predominantly north-to-south is numerical (1-42), and the axis that runs predominantly east-to-west is roman characters (A-I).
+-   `shift`: Value is either "AM" or "PM," to communicate whether or not the sighting session occurred in the morning or late afternoon.
+-   `date`: Concatenation of the sighting session day and month.
+
+
+## Exploratory analysis
+
+
+
+
+
+## Additional analysis
+
+
+
+## Discussion
+
+
+
+## Data Source
+This is a dataset of recent crime data from Los Angeles, covering a wide range of crime types, from violent crimes like homicide and assault to property crimes like theft and burglary. The data is carefully organized, providing insights into crime trends, geographic differences, and temporal patterns. The dataset can be downloaded directly from https://www.kaggle.com/datasets/arpitsinghaiml/u-s-crime-dataset/data.
+
+
+
+
+
+
+
+
