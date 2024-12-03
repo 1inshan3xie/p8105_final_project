@@ -1,30 +1,298 @@
 ---
-title: "location"
-author: "Tingyu Qian"
-date: "2024-11-20"
-output: html_document
+title: "LA Crime Trends Over Locations"
+author: "Jianming Wang-jw4693"
+output: 
+  html_document:
+    code_folding: hide
+    always_allow_html: true
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(ggsci)
+library(leaflet)
+library(tidyverse)
+library(plotly)
+library(viridis)
+library(reshape2)
+library(patchwork)
+
+options(
+  ggplot2.continuous.color = 'viridis',
+  ggplot2.continuous.fill = 'viridis'
+)
+
+scale_color_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Analysis of Crimes for locations
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Our project dives into the Los Angeles Police Department crime dataset to uncover the "who, what, where, and when" of crime across LA's diverse neighborhoods. We're on a mission to decode the patterns of crime by exploring how different demographics, time frames, and locations shape the city's unique crime profile. Whether it's catching late-night trends, uncovering hotspots, or spotlighting demographic factors, we’re here to map the hidden story of LA’s crime scene and uncover what drives certain areas' steady patterns—or sudden disruptions!
 
-```{r cars}
-summary(cars)
+In this section, we are working to show the distribution of primary locations of crime, explore the geospatial mapping data and mode of diffrent types of cime.
+
+
+## Where does the crime happen? Are they severe?
+
+```{r, message=FALSE}
+crime <- read_csv('./data/crime_data_LA.csv')
+ggplot(crime, aes(x = area_name))+ 
+  geom_bar(aes(fill = as.character(part_1_2)), alpha = 0.7)+
+  theme_minimal()+
+  #theme(legend.position='bottom')+
+  labs(
+    title = "Crime in different areas of Los Angeles",
+    x = "Area name",
+    y = "Number of crime",
+    fill = 'Serious level')+
+  theme(axis.text.x = element_text(angle = 60,vjust = 0.85,hjust = 0.75))
+
 ```
 
-## Including Plots
+This is a **grouped bar chart** showing the crime distribution in **different areas of Los Angeles**. Legend with level 1 represents more serious crimes (plotted in purple), with 2 represents less serious crimes (plotted in yellow).
+The **Central** area has the highest total number of crimes, with both significant serious (1) and less serious (2) crimes. Several other areas (e.g., Foothill) have comparatively smaller total bar heights, indicating fewer crimes. In most areas, the number of less serious crimes (2, yellow) is consistently **lower than** serious crimes (1, purple).
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r, message=FALSE}
+table1 <- table(crime$area_name, crime$part_1_2)
+chi1 <- chisq.test(table1)
+ggplot(melt(table1), aes(x = Var2, y = as.character(Var1), fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "#2A788EFF") +
+  theme_minimal()+
+  annotate("text", x = 1.5, y = 20, label = paste("Chi-Square = ", round(chi1$statistic,2), '\n',
+                         "p-value = ", chi1$p.value),
+           size = 6)+
+  labs(title = "Heatmap of Chi-Square Test Result: Serious Level by Area", x = "Serious Level", y = "Area")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+This is a **heatmap** showing the relationship between crime seriousness level and areas in Los Angeles. Chi-Square Statistic is **2858.69**, indicating a very **high dependence** between variables (serious level and area). P-value is **0**, suggesting the observed distribution of crime seriousness by area is **statistically significant**(very unlikely to occur by random chance).
+Compared with less serious crimes, areas including Pacific and Central have larger numbers of more serious crimes, indicating serious crimes are more likely to occur in these areas. 
+
+##  what premises are offenders more likely to commit crimes? Are they severe?
+
+```{r, warning=FALSE}
+crime_prem = crime|>
+  separate(premis_desc, into = c("Col1", "Col2"), sep = " - ", extra = "merge")|>
+  select(-Col2)
+crime_lat = crime|>
+  filter(lat!= 0,
+         lon!= 0)
+prem_summary <- crime_prem |>
+  group_by(Col1) |>
+  summarise(TotalCrimes = n(),
+            Totalserious = sum(part_1_2 == 1),
+            Totalnotserious = sum(part_1_2 == 2)) %>%
+  arrange(desc(TotalCrimes))
+top_prem <- prem_summary %>%
+  mutate(Col1 = ifelse(row_number() > 20, "OTHERS", Col1)) %>%
+  group_by(Col1) %>%
+  summarise(TotalCrimes = sum(TotalCrimes),
+            Serious = sum(Totalserious),
+            Not_serious = sum(Totalnotserious)) %>%
+  arrange(desc(TotalCrimes))
+  
+top_prem|>
+  pivot_longer(
+    cols = c(Serious, Not_serious), 
+                          names_to = "CrimeType", values_to = "Count"
+  )|>
+ggplot(aes(x = reorder(Col1, TotalCrimes), y = Count, fill = CrimeType)) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
+  labs(title = "Crime Distribution by Premises Type", x = "Premises Type", y = "Total Crimes") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45,vjust = 0.85,hjust = 0.75))+
+  theme(
+    axis.text = element_text(size = 8),        # 坐标轴刻度字号
+    axis.title = element_text(size = 12),       # 坐标轴标签字号
+    plot.title = element_text(size = 14)        # 图表标题字号
+  )
+```
+
+This is a **stacked bar chart** illustrating crime distribution by **premises type**. Street has the highest total number of crimes, it is the most common location for serious crimes. The number of serious crimes on the streets is particularly high, suggesting that streets are hotspots for criminal activity. Single family dwelling also has large number of crimes, with the largest number of less serious crimes.
+For streets with high crime rates, it may be necessary to **increase police patrols or install surveillance equipment**. For single-family dwellings, **community engagement and education programs** may be needed to raise awareness and improve safety.
+
+```{r, message=FALSE}
+crime_type = crime_prem|>
+  mutate(Col1 = if_else(Col1 %in% top_prem$Col1, Col1, 'OTHERS'))
+
+table2 <- table(crime_type$Col1, crime$part_1_2)
+chi2 <- chisq.test(table2)
+ggplot(melt(table2), aes(x = Var2, y = as.character(Var1), fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "#2A788EFF") +
+  theme_minimal()+
+  annotate("text", x = 1.5, y = 20.5, label = paste("Chi-Square = ", round(chi2$statistic,2), '\n',
+                         "p-value = ", chi2$p.value),
+           size = 4)+
+  labs(title = "Heatmap of Chi-Square Test Result: Serious Level by Premises", x = "Serious Level", y = "Premises Type")+
+  theme(title = element_text(size = 8))
+```
+
+This **heatmap** visualizes the results of a Chi-Square test that assesses the relationship between the type of premises and the serious level of incidents. The Chi-Square statistic is **182154.31**, indicating a very **high dependence** between variables (serious level and premises types). The p-value is **0**, which suggests that the observed relationship between premises type and serious level is **statistically significant**.
+The heatmap shows that certain premises types have a **higher concentration** of incidents at the serious level. For example, **street and parking lot** seem to have a higher value at level 1, indicating a higher severity of incidents. The **multi-unit dwelling and single family dwelling** categories have lighter shades in serious crimes, suggesting less severe incidents compared to other types.
+
+## Are those crimes solved? Does any diference exist between areas?
+
+```{r, message=FALSE}
+ggplot(crime, aes(x = area_name, fill = status_desc)) +
+  geom_bar(position = "dodge") +
+  scale_y_continuous(
+    trans = "log")+
+  labs(title = "Histogram of Crime Status", x = "Crime Status", y = "Log-transformed Counts", fill = 'Crime Status')+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 60,vjust = 0.85,hjust = 0.75))
+  
+```
+
+This **histogram** provides a visual representation of crime status across various locations, with the y-axis showing the **log-transformed counts of crimes** and the x-axis listing different area locations. The **"Invest Cont"** status has the largest count, indicating that most of the crimes in LA are **unsolved**. In the closed crimes, the **"Adult Arrest"** status appears to be the most common in most locations, and crimes tend to be concentrated in **adults**.
+
+
+## Does any relationship exist between the areas and premises of crime?
+
+```{r, message=FALSE}
+table3 <- table(crime_type$Col1, crime$area_name)
+chi3 <- chisq.test(table3)
+ggplot(melt(table3), aes(x = Var2, y = as.character(Var1), fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "#2A788EFF") +
+  annotate("text", x = 11, y = 20, label = paste("Chi-Square = ", round(chi3$statistic,2), '\n',
+                         "p-value = ", chi3$p.value),
+           size = 4)+
+  labs(title = "Heatmap of Chi-Square Test Result: Premises Type by Areas", x = "Area", y = "Premises Type")+
+  theme(axis.text.x = element_text(angle = 60,vjust = 0.85,hjust = 0.75))+
+  theme(title = element_text(size = 8),
+        legend.text = element_text(size = 6))
+  
+```
+
+This **heatmap** is a visual representation of the results from a Chi-Square test that examines the relationship between the type of premises and different areas. The Chi-Square statistic is given as **179318.97**, indicating a very **high dependence** between variables (areas and premises types). The p-value is **0**, which is **highly significant**. 
+The heatmap shows varying degrees of association between different premises types and areas. Some areas have darker shades for specific premises types, indicating a **stronger association(e.g., street crimes in 77th Street, multi-unit dwelling crimes in Olympics, sidewalk crimes in Central, single family dwelling crimes in 77th Street and Southeast, etc.)**.
+
+## What does the distribution of crimes in LA look like on maps?
+
+Below I provide different colors of **spatial distribution maps**, reflecting the distribution of crimes im terms of **areas, serious levels and premises types**.
+
+### Distribution among areas
+```{r, message=FALSE}
+ggplot(crime_lat, aes(x = lat, y = lon, color = area_name)) +
+  geom_point(alpha = 0.4, size = 0.3) +
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  scale_color_discrete()+
+  labs(title = "Spatial Distribution - Area", x = "Latitude", y = "Longitude")
+```
+
+### Distribution of serious levels and premises types
+```{r, message=FALSE}
+crime_plotly = crime_type |>
+  filter(lat != 0,
+         lon != 0)|>
+  mutate(text_label = str_c("Area: ", area_name, "\nPremises: ", Col1, "\nSerious Level: ", part_1_2, "\nStatus: ", status_desc))|>
+  arrange(area_name)
+p1 <- ggplot(crime_plotly, aes(x = lat, y = lon, color = as.character(part_1_2))) +
+  geom_point(alpha = 0.4, size = 0.3) +
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  scale_color_discrete()+
+  theme(legend.position = 'bottom',
+        legend.text = element_text(size = 6))+
+  labs(title = "Spatial Distribution - Level and Premises", x = "Latitude", y = "Longitude", color = 'Serious Level')
+p2 <- ggplot(crime_plotly, aes(x = lat, y = lon, color = Col1)) +
+  geom_point(alpha = 0.4, size = 0.3) +
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  scale_color_discrete()+
+  theme(legend.position = 'none')+
+  labs(x = "Latitude", y = "Longitude", color = 'Premises Type')
+p1+p2
+```
+
+### Crime level difference among spatial distribution
+```{r, message=FALSE}
+ggplot(crime_lat, aes(x = lat, y = lon)) +
+  stat_density_2d(aes(fill = after_stat(level)), geom = "polygon") +
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  labs(title = "Spatial Heatmap", x = "Latitude", y = "Longitude")
+```
+
+This is a **spatial heatmap** for crime level, calculated from the **frequency of different places**. The gradient represents the intensity or concentration of the variable being measured. Darker purple areas indicate lower values, while yellow areas indicate higher values.
+
+## Interactive map for crimes information around different areas
+
+Here I also provide a **interactive map for crimes in LA**, containing all kinds of the crimes information such as serious level, premises type, status and so on.
+
+```{r}
+#crime_type |>
+# filter(lat != 0,
+#         lon != 0,
+#         area_name == '77th Street'
+#         )|>
+#  mutate(text_label = str_c("Area: ", area_name, "\nPremises: ", Col1, "\nSerious Level: ", part_1_2, "\nStatus: ", status_desc)) |> 
+#  plot_ly(
+#    x = ~lat, y = ~lon, type = "scatter", mode = "markers",
+#    color = ~factor(status_desc), alpha = 0.6, text = ~text_label, marker = list(size = 4))
+fig <- plot_ly()
+unique_areas <- unique(crime_plotly$area_name)
+# 添加每个区域的 trace
+for (i in 1:21) {
+  data_use <- crime_plotly %>% filter(area_name == unique_areas[i])
+  
+  fig <- fig %>%
+    add_trace(
+      data = data_use,
+      x = ~lat,
+      y = ~lon,
+      type = 'scatter',
+      mode = 'markers',
+      text = ~text_label,
+      marker = list(size = 4),
+      name = unique_areas[i],
+      alpha = 0.3,
+      visible = ifelse(unique_areas[i] == "77th Street", TRUE, FALSE) # 默认显示 "77th Street"
+    )
+}
+
+# 创建按钮
+buttons <- list()
+for (i in seq_along(unique_areas)) {
+  area <- unique_areas[i]
+  
+  # 构造 visible 列表：仅显示当前区域的 trace
+  visible_states <- rep(FALSE, length(unique_areas))
+  visible_states[i] <- TRUE
+  
+  buttons[[i]] <- list(
+    method = "restyle",
+    args = list("visible", visible_states),
+    label = area
+  )
+}
+
+# 添加显示全部的按钮
+buttons[[length(buttons) + 1]] <- list(
+  method = "restyle",
+  args = list("visible", rep(TRUE, length(unique_areas))),
+  label = "Show All"
+)
+
+buttons_grouped <- list(
+  list(type = "buttons", direction = "down", x = -0.3, y = 1.2, buttons = buttons[1:11]),
+  list(type = "buttons", direction = "down", x = -0.7, y = 1.2, buttons = buttons[12:21])
+)
+
+# 配置 layout 和按钮
+fig <- fig %>%
+  layout(
+    title = list(text = "Interactive Map for Crime in LA", x = 1),
+    updatemenus = buttons_grouped
+  )
+
+fig
+```
