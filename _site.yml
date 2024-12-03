@@ -21,7 +21,7 @@ navbar:
     - text: "Prediction"
       href: prediction.html
     - text: "Shiny App"
-      href: 
+      href: https://tingyusally.shinyapps.io/shiny_dashboard_Tingyu_Qian/
     - icon: fa-github fa-lg
       href: https://github.com/tingyusally/Final-Project
 output:
