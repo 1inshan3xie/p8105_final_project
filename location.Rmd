@@ -19,6 +19,7 @@ library(plotly)
 library(viridis)
 library(reshape2)
 library(patchwork)
+library(tigris)
 
 options(
   ggplot2.continuous.color = 'viridis',
@@ -180,22 +181,38 @@ Below I provide different colors of **spatial distribution maps**, reflecting th
 
 ### Distribution among areas
 ```{r, message=FALSE}
-ggplot(crime_lat, aes(x = lat, y = lon, color = area_name)) +
-  geom_point(alpha = 0.4, size = 0.3) +
-  scale_fill_viridis_c() +
-  theme_minimal() +
-  scale_color_discrete()+
-  labs(title = "Spatial Distribution - Area", x = "Latitude", y = "Longitude")
+options(tigris_use_cache = TRUE)
+sf::sf_use_s2(FALSE)
+ca_counties <- counties(state = "CA", cb = TRUE)
+la_county <- ca_counties[ca_counties$NAME == "Los Angeles", ]
+world_map <- map_data("county", region = "california,los angeles")
+locations <- data.frame(
+  lon = crime_lat$lon,
+  lat = crime_lat$lat,
+  labelss = crime_lat$area_name
+)
+ggplot() +
+#  geom_polygon(data = world_map, aes(x = long, y = lat, group = group), fill = "lightgray", color = #"white") +
+  geom_sf(data = la_county, fill = "lightgray", color = "darkblue") +
+  geom_point(data = locations, aes(x = lon, y = lat, color = labelss)) +
+  ylim(33.68, 34.35)+
+  xlim(-118.7, -118.1)+
+  scale_color_viridis_d()+
+  labs(title = "Spatial Distribution - Area", x = "Latitude", y = "Longitude")+
+  theme_minimal()
 ```
 
 ### Distribution of serious levels and premises types
+
+The plot on the left shows what the distribution of the serious level of crimes in LA looks like, and the right one shows the distribution of crimes premises type.
+
 ```{r, message=FALSE}
 crime_plotly = crime_type |>
   filter(lat != 0,
          lon != 0)|>
   mutate(text_label = str_c("Area: ", area_name, "\nPremises: ", Col1, "\nSerious Level: ", part_1_2, "\nStatus: ", status_desc))|>
   arrange(area_name)
-p1 <- ggplot(crime_plotly, aes(x = lat, y = lon, color = as.character(part_1_2))) +
+p1 <- ggplot(crime_plotly, aes(x = lon, y = lat, color = as.character(part_1_2))) +
   geom_point(alpha = 0.4, size = 0.3) +
   scale_fill_viridis_c() +
   theme_minimal() +
@@ -203,7 +220,7 @@ p1 <- ggplot(crime_plotly, aes(x = lat, y = lon, color = as.character(part_1_2))
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 6))+
   labs(title = "Spatial Distribution - Level and Premises", x = "Latitude", y = "Longitude", color = 'Serious Level')
-p2 <- ggplot(crime_plotly, aes(x = lat, y = lon, color = Col1)) +
+p2 <- ggplot(crime_plotly, aes(x = lon, y = lat, color = Col1)) +
   geom_point(alpha = 0.4, size = 0.3) +
   scale_fill_viridis_c() +
   theme_minimal() +
@@ -215,7 +232,7 @@ p1+p2
 
 ### Crime level difference among spatial distribution
 ```{r, message=FALSE}
-ggplot(crime_lat, aes(x = lat, y = lon)) +
+ggplot(crime_lat, aes(x = lon, y = lat)) +
   stat_density_2d(aes(fill = after_stat(level)), geom = "polygon") +
   scale_fill_viridis_c() +
   theme_minimal() +
@@ -247,8 +264,8 @@ for (i in 1:21) {
   fig <- fig %>%
     add_trace(
       data = data_use,
-      x = ~lat,
-      y = ~lon,
+      x = ~lon,
+      y = ~lat,
       type = 'scatter',
       mode = 'markers',
       text = ~text_label,
@@ -296,3 +313,4 @@ fig <- fig %>%
 
 fig
 ```
+
