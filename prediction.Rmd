@@ -1,0 +1,244 @@
+---
+title: "Predict the severity of crime"
+author: "Yunjia Liu"
+date: "2024-11-20"
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+library(xgboost) #for fitting the xgboost model
+library(caret)
+library(tidyverse)
+library(ROCR)
+library(viridis)
+```
+
+## 1.Load and clean the dataset.
+
+Here are some key steps in this part. \
+
+- Some key transformation: \
+- Converts serious_level to a binary numeric variable. \
+- Extracts date and formats time for easier analysis. The `date_occ` column is transformed to retain only the date portion, while `time_occ` is formatted into a 4-digit time string (e.g., 930 becomes 0930).
+- Missing values in the serious_level column are dropped to ensure data integrity
+- The final predictors are `date_only`,`time_occ`,`area`,`serious_level`,`vict_age`,`vict_sex`,`vict_descent`,`rpt_dist_no`,`premis_cd`,`lat`,`lon`. These are primary and basic data that police can get
+
+**We are building this model to predict crime severity based on crime location, victim demographics, and crime time. Also, we are trying to use as less predictors as possible and only keep those primary data for any crime (e.g, minimum information for 911 operator to assess the situation and dispatch appropriate help). Social and legal support services can be deployed more effectively in areas or for demographics where severe crimes are predicted to occur.(eg, enhance vigilance for incidents more likely to escalate into severe crimes)**
+
+```{r}
+crime_data = read.csv(file ="./data/crime_data_LA.csv", row.names = 1) |>
+  janitor::clean_names() |>
+  rename(serious_level = part_1_2) |>
+  mutate(
+    serious_level = as.numeric(as.factor(serious_level)) - 1, # Ensure binary
+    date_only = as.Date(mdy_hms(date_occ)),             # Extract only the date
+    # Step 3: Convert `time_occ` into a proper time format
+    time_occ = sprintf("%04d", time_occ)
+    )|>
+  drop_na(serious_level) |>
+  select(date_only,time_occ,area,serious_level,vict_age,vict_sex,vict_descent,rpt_dist_no,premis_cd,lat,lon)
+
+```
+
+## 2.Prepare the training set and invidividual testing test. 
+
+We separate the data into train and test into 8:2 by stratified sampling so that we will reach at a balanced the train and test set to avoid any possible bias from the spliting. Also, Stratified sampling maintains the class distribution in both training and testing sets, ensuring the model is evaluated fairly on the test set.
+```{r}
+# Split the data
+set.seed(0)
+parts = createDataPartition(crime_data$serious_level, p = .8, list = FALSE)
+train = crime_data[parts, ]
+test = crime_data[-parts, ]
+
+# Define predictors and response
+target_col = "serious_level"
+
+train_x = data.matrix(train[, !colnames(train) %in% target_col])  # Features
+train_y = train[[target_col]]  # Target
+
+test_x = data.matrix(test[, !colnames(test) %in% target_col])  # Features
+test_y = test[[target_col]]  # Target
+
+xgb_train = xgb.DMatrix(data = train_x, label = train_y)
+xgb_test = xgb.DMatrix(data = test_x, label = test_y)
+```
+
+Distribution of crime severity in **original dataset** (`0` stands for serious crime and `1` stands for less serious)
+```{r}
+table(crime_data$serious_level) / nrow(crime_data)
+```
+
+Distribution of crime severity in **training** dataset (`0` stands for serious crime and `1` stands for less serious)
+```{r}
+table(train$serious_level) / nrow(train)
+```
+
+Distribution of crime severity in **testing dataset** (`0` stands for serious crime and `1` stands for less serious)
+```{r}
+table(test$serious_level) / nrow(test)
+```
+
+These 3 tables suggests that stratified sampling has been done correctly and reached our expectation intending to aviod bias caused by dataset spliting.
+
+
+
+### 3. Train the Model.
+We save the model to the repository only the first time to avoid repeated calculation. Although we didn't show the exact the parameters adjustment steps here, we use **grid_search** to find the parameter group with the best performance.
+
+```{r}
+# Train the final model with the best parameters
+if (!file.exists("pred_models/xgboost_model.model")) {
+  
+  param_grid <- expand.grid(
+  max_depth = c(4, 6, 8),
+  eta = c(0.01, 0.1, 0.3),
+  min_child_weight = c(1, 3, 5),
+  subsample = c(0.7, 0.8, 0.9),
+  colsample_bytree = c(0.7, 0.8, 0.9)
+)
+
+# Placeholder for best parameters and best logloss
+best_logloss <- Inf
+best_params <- NULL
+
+# Grid search
+for (i in 1:nrow(param_grid)) {
+  params <- list(
+    objective = "binary:logistic",  
+    eval_metric = "logloss",       # Ensure logloss is the evaluation metric
+    max_depth = param_grid$max_depth[i],
+    eta = param_grid$eta[i],
+    min_child_weight = param_grid$min_child_weight[i],
+    subsample = param_grid$subsample[i],
+    colsample_bytree = param_grid$colsample_bytree[i]
+  )
+  
+  # Watchlist for evaluation
+  watchlist <- list(train = xgb_train, test = xgb_test)
+  
+  # Train the model
+  xgb_model <- xgb.train(
+    params = params,
+    data = xgb_train,
+    nrounds = 300,
+    watchlist = watchlist,
+    verbose = 0
+  )
+  
+  # Extract test logloss
+  logloss <- as.numeric(xgb_model$evaluation_log[nrow(xgb_model$evaluation_log), "test_logloss"])
+  
+  # Update best parameters if current logloss is better
+  if (logloss < best_logloss) {
+    best_logloss <- logloss
+    best_params <- params
+  }
+}
+
+# Print the best parameters and logloss
+cat("Best Parameters:\n")
+print(best_params)
+cat("Best Logloss: ", best_logloss, "\n")
+
+  best_model <- xgb.train(
+    params = best_params,
+    data = xgb_train,
+    nrounds = 300,
+    watchlist = watchlist,
+    verbose = 0
+  )
+  
+  xgb.save(best_model, "pred_models/xgboost_model.model")
+  cat("Model saved to 'xgboost_model.model'\n")
+} else {
+  best_model <- xgb.load("pred_models/xgboost_model.model")
+  cat("Model loaded from 'xgboost_model.model'\n")
+}
+```
+
+### 4. Evaluation
+
+
+```{r}
+predictions <- predict(best_model, test_x, type = "prob")  # Assuming `type = "prob"` gives probabilities
+
+pred <- prediction(predictions, test_y)
+```
+
+#### The performance table of the model.
+We made a table summarizing the evaluation metrics (AUC, Accuracy, Precision, Recall, F1 Score) is printed in a clean format. \
+
+(1) AUC (Area Under the Curve), valued at 0.8238, indicating that the model has strong discriminatory power to separate positive and negative classes (closer to 1 is ideal); \
+(2) Accuracy, at 0.7441, reflects the model's overall correctness, with approximately 74.4% of predictions being accurate; \
+(3) Precision (Pos Pred Value), at 0.7676, reveals that ~76.8% of predicted positives are truly positive, indicating reliability in positive predictions;  \
+(4) Recall (Sensitivity), at 0.8173, measures the model's ability to correctly identify ~81.7% of actual positives, showing strong sensitivity \ 
+(5) the F1 Score, at 0.7917, balances precision and recall, making it suitable for imbalanced datasets.
+
+
+```{r}
+# Convert predicted probabilities to binary predictions using a 0.5 threshold
+pred_labels = ifelse(predictions > 0.5, 1, 0)
+
+pred_labels <- factor(pred_labels, levels = c(0, 1))
+
+# Create a confusion matrix
+conf_mat <- confusionMatrix(pred_labels, factor(test_y))
+
+# Extract evaluation metrics from the confusion matrix
+accuracy = conf_mat$overall['Accuracy']
+precision = conf_mat$byClass['Pos Pred Value']
+recall = conf_mat$byClass['Sensitivity']
+f1_score = conf_mat$byClass['F1']
+
+# Calculate AUC (Area Under the Curve) using ROCR
+perf_auc = performance(pred, measure = "auc")
+auc_value = perf_auc@y.values[[1]]
+
+# Combine metrics into a data frame
+metrics_table =
+  data.frame(
+    Metric = c("AUC", "Accuracy", "Precision", "Recall", "F1 Score"),
+    Value = c(auc_value, accuracy, precision, recall, f1_score)
+)
+
+metrics_table |> knitr::kable(digits = 4)
+```
+
+#### The ROC Curve of the model.
+
+The ROC Curve visually complements the table by plotting the True Positive Rate (Sensitivity) against the False Positive Rate (1 - Specificity) for different thresholds. The blue curve shows the model's superior performance, remaining significantly above the green diagonal line, which represents random guessing, with the steepness and height of the curve near the top-left corner further validating its strength.
+
+```{r}
+# Plot the ROC Curve
+perf = performance(pred, measure = "tpr", x.measure = "fpr")
+plot(perf, col = "#39568CFF", main = "ROC Curve", lwd = 2.5)
+abline(a = 0, b = 1, col = "#20A387FF", lty = 2, lwd = 2)
+```
+
+
+#### Show the feature importance in the final model. 
+
+This feature importance chart demonstrates that **location type (premis_cd)** and **racial or ethnic background of the victim (vict_descent)** are the most influential factors in predicting the model's target variable. Meanwhile, features like the crime's area or specific date contribute less significantly. This information is valuable for model interpretation and could guide future feature engineering or data collection priorities.
+
+```{r}
+feature_names = colnames(train_x)
+importance_matrix = xgb.importance(feature_names = feature_names, model = best_model)
+
+# Convert the importance matrix to a data frame
+importance_df = importance_matrix[1:10, ]
+importance_df$Feature = factor(importance_df$Feature, levels = importance_df$Feature)
+
+# Plot using ggplot2
+ggplot(importance_df, aes(x = Feature, y = Gain, fill = Feature)) +
+  geom_bar(stat = "identity") +
+  scale_fill_viridis_d() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Feature Importance", x = "Features", y = "Gain") +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
+```
