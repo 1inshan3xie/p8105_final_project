@@ -42,7 +42,7 @@ ggplot() +
   ylim(33.68, 34.35)+
   xlim(-118.7, -118.1)+
   scale_color_viridis_d()+
-  labs(title = "Crimes in LA", x = "Latitude", y = "Longitude", color = "Area")+
+  labs(title = "Crimes in LA", x = "Longitude", y = "Latitude", color = "Area")+
   theme_minimal()
 ```
 

@@ -198,7 +198,7 @@ ggplot() +
   ylim(33.68, 34.35)+
   xlim(-118.7, -118.1)+
   scale_color_viridis_d()+
-  labs(title = "Spatial Distribution - Area", x = "Latitude", y = "Longitude")+
+  labs(title = "Spatial Distribution - Area", x = "Longitude", y = "Latitude")+
   theme_minimal()
 ```
 
@@ -219,14 +219,14 @@ p1 <- ggplot(crime_plotly, aes(x = lon, y = lat, color = as.character(part_1_2))
   scale_color_discrete()+
   theme(legend.position = 'bottom',
         legend.text = element_text(size = 6))+
-  labs(title = "Spatial Distribution - Level and Premises", x = "Latitude", y = "Longitude", color = 'Serious Level')
+  labs(title = "Spatial Distribution - Level and Premises", x = "Longitude", y = "Latitude", color = 'Serious Level')
 p2 <- ggplot(crime_plotly, aes(x = lon, y = lat, color = Col1)) +
   geom_point(alpha = 0.4, size = 0.3) +
   scale_fill_viridis_c() +
   theme_minimal() +
   scale_color_discrete()+
   theme(legend.position = 'none')+
-  labs(x = "Latitude", y = "Longitude", color = 'Premises Type')
+  labs(x = "Longitude", y = "Latitude", color = 'Premises Type')
 p1+p2
 ```
 
@@ -236,7 +236,7 @@ ggplot(crime_lat, aes(x = lon, y = lat)) +
   stat_density_2d(aes(fill = after_stat(level)), geom = "polygon") +
   scale_fill_viridis_c() +
   theme_minimal() +
-  labs(title = "Spatial Heatmap", x = "Latitude", y = "Longitude")
+  labs(title = "Spatial Heatmap", x = "Longitude", y = "Latitude")
 ```
 
 This is a **spatial heatmap** for crime level, calculated from the **frequency of different places**. The gradient represents the intensity or concentration of the variable being measured. Darker purple areas indicate lower values, while yellow areas indicate higher values.
