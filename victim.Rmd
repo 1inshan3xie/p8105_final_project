@@ -223,16 +223,26 @@ ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_sex) & data$vict_sex != "H"
 ```
 
 This grouped bar chart provides a detailed view of how crime severity differs across gender and age groups, highlighting significant trends in both dimensions. 
-//For Females (F): 
-//Young adults have the highest crime counts, with less serious crimes being slightly more frequent than serious crimes. 
-//Middle-aged people also show significant crime counts, though less than young adults, and the pattern between crime severities is similar.
-//Crime counts for juveniles and the elderly are much lower.
-//For Males (M):
-//Young adults dominate in crime counts, with serious crimes being more frequent than less serious ones (reversing the trend seen in females).
-//Middle-aged people follow with high counts, though less than young adults, and serious crimes still dominate.
-//Crime counts for juveniles and the elderly are low, similar to females.
-//For Non-Binary/Other (X):
-//Crime counts are minimal across all age groups, but young adults and middle-aged people have slightly higher counts compared to juveniles and the elderly.
+
+For Females (F): 
+
+Young adults have the highest crime counts, with less serious crimes being slightly more frequent than serious crimes. 
+
+Middle-aged people also show significant crime counts, though less than young adults, and the pattern between crime severities is similar.
+
+Crime counts for juveniles and the elderly are much lower.
+
+For Males (M):
+
+Young adults dominate in crime counts, with serious crimes being more frequent than less serious ones (reversing the trend seen in females).
+
+Middle-aged people follow with high counts, though less than young adults, and serious crimes still dominate.
+
+Crime counts for juveniles and the elderly are low, similar to females.
+
+For Non-Binary/Other (X):
+
+Crime counts are minimal across all age groups, but young adults and middle-aged people have slightly higher counts compared to juveniles and the elderly.
 
 Overall, males commit more serious crimes, especially among young adults and middle-aged groups, compared to females. Non-binary/other individuals have relatively low crime counts across all groups. Young adults and middle-aged people dominate in crime counts, while juveniles and the elderly have lower crime involvement across all genders.
 
