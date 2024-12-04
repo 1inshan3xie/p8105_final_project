@@ -1,5 +1,6 @@
 ---
 title: "Victim Demographics"
+author: "Vivian Xia -- yx2953" 
 output: 
   html_document:
     code_folding: hide
