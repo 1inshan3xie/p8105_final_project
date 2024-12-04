@@ -30,8 +30,11 @@ By utilizing advanced visualization and analysis tools, we aim to contribute to 
 
 
 ## Initial questions
-
-
+We’re on a mission to decode the patterns of crime by exploring how different demographics, time frames, and locations shape the city's unique crime profile. We are interested in:\
+**1.**What does the general demographic profile of victims look like? What’s the distribution of their races, genders and ages?\
+**2.**What is the distribution of crime across time dimensions? What if analyzing in terms of hours, weekdays, seasons and years?\
+**3.**How crime is associated with location information? What does the geographic maps and spatial distribution look like?\
+\
 
 ## Data
 The source dataset is the Los Angeles Police Department (LAPD) crime dataset, which contains all cases received by the LAPD from January 1, 2020 to September 30, 2024, and contains 982638 observations and 28 variables. After deleting variables such as weapon_cd, weapon_desc, etc., which contain a large number of missing values, the variables that are not needed are further deleted according to the needs of this project.The final data used for analysis contains the following variables:\
@@ -59,26 +62,26 @@ The Exploratory analysis of our project is divided into three main sections: Vic
 \
 In the Time Trend analysis section, we examine crime data from four temporal perspectives: yearly, seasonally, weekdays, and hourly. Bar plots are used to show the total number of crimes for each time period, with stacked bar plots comparing the counts of serious and less serious crimes. To further explore spatial variations, interactive line charts created with `Plotly` visualize the temporal trends in crime counts across different areas. Finally, line charts are also used to display changes in crime counts over time by crime type, providing insights into patterns of criminal activity.\
 \
-(location part)
+In the Location analysis section, according to the existing location information of crimes in LA, including the area names, the premises types, the geographic coordinators, the serious levels and the status of crimes occurring, we do some exploratory analysis to further understand the distribution of crimes. For visualization, we first use barplots to show the distribution of crimes and their serious levels(1 for serious and 2 for non-serious) in terms of their areas, premises and crime status. Areas like 77th Street and Central have large numbers of total crimes and serious criminal acts. What’s more, the crimes with continued investigations status are much more than other types of status. Using longitude and latitude information, we combine the visualization results with the geographic and interactive map to better reflect the different dimensions(serious level, crime status, etc.) of crimes information.\
 \
 After finished on analyzing patterns and trends in crime occurrences based on various time scales, such as yearly, seasonal, weekdays, and hourly, visualizing how crime evolves over time and across different dimensions, examing distribution of primary crime locations, exploring geospatial mapping data and modes of different crime types, as well as the number of crimes in each area. We decide to bring these insights to life, we chose to use Shiny to create an interactive dashboard. This allows users to apply filters based on different areas in LA and time trends, enabling them to observe crime counts and distributions dynamically.\
 \
-For the shiny, we specifically selected data from 2023 instead of including all available time periods. This decision was made because 2023 represents the most recent year with complete data and is unaffected by the disruptions caused by the pandemic, ensuring a clearer and more relevant analysis.
+For the shiny, we specifically selected data from 2023 instead of including all available time periods. This decision was made because 2023 represents the most recent year with complete data and is unaffected by the disruptions caused by the pandemic, ensuring a clearer and more relevant analysis.\
 \
 
 
 ## Additional analysis
-1. Chi-Squared Test\
-1.1 Chi-Squared Test Between Age Group and Crime Severity\
+**1. Chi-Squared Test**\
+**1.1 Chi-Squared Test Between Age Group and Crime Severity**\
 (xyw's part)
 \
-1.2 Chi-Squared Test Between Different Time Period and Crime Severity\
+**1.2 Chi-Squared Test Between Different Time Period and Crime Severity**\
 The chi-squared statistic for yearl-difference is 387.8, p-value < 2.2e-16; while for seasonal difference, the X-squared = 58.749, p-value = 1.088e-12. For difference between weekdays, the X-squared = 262.23, whose p-value is less than 2.2e-16. And for the difference in different hour period of the day, the X-squared is 13747,p-value < 2.2e-16. All these test result shows that there are significant differences in the distribution of severity of cases between different year, seasons, weekdays and hour periods of the day.\
 \
-1.3 Chi-Squared Test\
+**1.3 Chi-Squared Test between serious levels and areas & premise types**\
 Using chi-squared test combining with heatmaps, we can find significant differences of crime serious levels in different areas and premise types. Also, the premise types of crimes in different areas are also significantly different. In testing relationship between crime seriousness level and areas, the Chi-Square Statistic is 2858.69, indicating a very high dependence between serious level and area in LA. In testing relationship between the type of premises and the serious level of incidents, the Chi-Square statistic is 182154.31, indicating a very high dependence between serious level and premises types. In testing the relationship between the type of premises and different areas, the Chi-Square statistic is 179318.97, indicating a very high dependence between areas and premises types. \
 
-2. Prediction of the Crime Serverity\
+**2. Prediction of the Crime Serverity**\
 
 
 
