@@ -57,6 +57,12 @@ ggplot(data[!is.na(data$vict_age), ], aes(x = age_group)) +
   )
 ```
 
+The first figure is a histogram showing the frequency distribution of victims across different age ranges. The x-axis represents age, ranging from 0 to 120 while the y-axis represents frequency, with values up to 100,000 or more. The distribution is approximately bell-shaped, indicating a concentration of victims in the middle age ranges (around 30-50), with fewer victims at younger (0-20) and older (70+) ages, which suggests a normal-like distribution with a slight skew towards younger ages.
+
+The second figure is a bar plot showing the count of victims across predefined age groups.
+The x-axis categorizes victims into four groups, Juvenile, Young adult, Middle-aged people and the elderly. The y-axis represents the count of victims in each age group, with values ranging from 0 to over 400,000. The Young adult group has the highest count, followed by Middle-aged people and The elderly. The Juvenile group has the lowest count. The distribution emphasizes the disproportionate representation of victims in the young adult and middle-aged categories.
+
+
 ```{r warning=FALSE, message=FALSE}
 # Crime Severity Distribution by Age Group
 data$severity_label <- ifelse(data$part_1_2 == 1, "Serious", "Less Serious")
@@ -90,6 +96,11 @@ ggplot(data[!is.na(data$vict_age), ], aes(x = age_group, fill = severity_label))
   )
   
 ```
+
+The figure showing the proportion of crime severity categories for each age group. For juveniles, the proportion of serious crimes is relatively low (about 30%), with the remaining 70% being less serious crimes. For young adults, the proportion of serious crimes increases to aroung 55% and the remaining are less serious crimes. For middle-aged people and the elders, the pattern is similar to young adults, with slightly fewer serious crimes.
+
+This visualization highlights how crime severity is distributed across age groups. The proportion of serious crimes tends to decrease with increasing age groups, except for the juvenile. Juveniles are involved in a lower proportion of serious crimes compared to older age groups.
+
 
 ```{r warning=FALSE, message=FALSE}
 # Calculate the proportion of crime severity for each gender
@@ -138,8 +149,9 @@ ggplot(severity_gender_data, aes(x = "", y = percentage, fill = severity_label))
     axis.ticks = element_blank(),
     panel.grid = element_blank()
   )
-
 ```
+The chart provides a clear comparison of crime severity levels across gender categories, highlighting distinct patterns in crime involvement based on gender. Each pie chart represents the proportion of crime severity levels for different gender categories. Intersex/Other has the highest proportion of Serious crimes (62.5%), followed by the Unknown category (60.7%) and Males (59.7%). Females have the highest proportion of Less Serious crimes (56.1%). There is a clear pattern where males and non-binary categories (Intersex/Other, Unknown) are associated with a greater proportion of serious crimes, while females have a higher association with less serious crimes.
+
 
 ```{r warning=FALSE, message=FALSE}
 # Filter data to remove invalid or missing race entries
@@ -192,7 +204,7 @@ ggplot(race_distribution, aes(x = "", y = percentage, fill = vict_descent)) +
 
 ```{r warning=FALSE, message=FALSE}
 # crime severity with age and gender
-ggplot(data[!is.na(data$vict_age), ], aes(x = age_group, fill = severity_label)) +
+ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_sex) & data$vict_sex != "H", ], aes(x = age_group, fill = severity_label)) +
   geom_bar(position = "dodge", alpha = 0.7) +
   facet_wrap(~ vict_sex) +
   theme_minimal() +
@@ -227,7 +239,7 @@ ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_descent) & data$vict_descen
 ```{r warning=FALSE, message=FALSE}
 # Create a boxplot showing age distribution by area
 box_age_area <- ggplot(data, aes(x = area_name, y = vict_age, fill = area_name)) +
-  geom_boxplot(outlier.color = "black", outlier.size = 0.5, alpha = 0.7) + # Boxplot with outliers
+  geom_boxplot(outlier.color = "black", outlier.size = 0.5, alpha = 0.7) + 
   theme_minimal() +
   labs(
     title = "Age Distribution by Area",
@@ -236,9 +248,8 @@ box_age_area <- ggplot(data, aes(x = area_name, y = vict_age, fill = area_name))
     fill = "Area"
   ) +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x-axis labels for readability
-    legend.position = "none"                           # Remove legend (redundant with x-axis)
-  )
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none")                          
 
 # Display the plot
 ggplotly(box_age_area)
