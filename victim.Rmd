@@ -26,6 +26,7 @@ scale_fill_discrete = scale_fill_viridis_d
 
 data <- read_csv("data/crime_data_LA.csv",show_col_types = FALSE)
 ```
+## Age Distribution of Victims
 
 ```{r warning=FALSE, message=FALSE}
 # Notice that age 0 stands for NA
@@ -36,8 +37,12 @@ ggplot(data, aes(x = vict_age)) +
   geom_histogram(binwidth = 5, fill = "#433E85FF", color = "black", alpha = 0.7) +
   theme_minimal() +
   labs(title = "Age Distribution of Victims", x = "Age", y = "Frequency") 
-  
+```
+\
+The first figure is a histogram showing the frequency distribution of victims across different age ranges. The x-axis represents age, ranging from 0 to 120 while the y-axis represents frequency, with values up to 100,000 or more. The distribution is approximately bell-shaped, indicating a concentration of victims in the middle age ranges (around 30-50), with fewer victims at younger (0-20) and older (70+) ages, which suggests a normal-like distribution with a slight skew towards younger ages.
 
+### Age Group Distribution of Victims
+``` {r warning=FALSE, message=FALSE}
 # divide age into four categories
 data$age_group <- cut(
   data$vict_age,
@@ -46,7 +51,7 @@ data$age_group <- cut(
   right = FALSE
 )
 
-#
+
 ggplot(data[!is.na(data$vict_age), ], aes(x = age_group)) +
   geom_bar(fill = "#25858EFF", color = "black", alpha = 0.7) +
   theme_minimal() +
@@ -56,13 +61,34 @@ ggplot(data[!is.na(data$vict_age), ], aes(x = age_group)) +
     y = "Count"
   )
 ```
-
-The first figure is a histogram showing the frequency distribution of victims across different age ranges. The x-axis represents age, ranging from 0 to 120 while the y-axis represents frequency, with values up to 100,000 or more. The distribution is approximately bell-shaped, indicating a concentration of victims in the middle age ranges (around 30-50), with fewer victims at younger (0-20) and older (70+) ages, which suggests a normal-like distribution with a slight skew towards younger ages.
-
+\
 The second figure is a bar plot showing the count of victims across predefined age groups.
 The x-axis categorizes victims into four groups, Juvenile, Young adult, Middle-aged people and the elderly. The y-axis represents the count of victims in each age group, with values ranging from 0 to over 400,000. The Young adult group has the highest count, followed by Middle-aged people and The elderly. The Juvenile group has the lowest count. The distribution emphasizes the disproportionate representation of victims in the young adult and middle-aged categories.
 
+### Age Distribution By Area
+```{r warning=FALSE, message=FALSE}
+# Create a boxplot showing age distribution by area
+box_age_area <- ggplot(data, aes(x = area_name, y = vict_age, fill = area_name)) +
+  geom_boxplot(outlier.color = "black", outlier.size = 0.5, alpha = 0.7) + 
+  theme_minimal() +
+  labs(
+    title = "Age Distribution by Area",
+    x = "Area",
+    y = "Victim Age",
+    fill = "Area"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none")                          
 
+# Display the plot
+ggplotly(box_age_area)
+
+```
+\
+This box plot visualization provides insights into how victim age varies across different areas, showing both central tendencies (medians) and variability (IQRs and ranges). Each box plot represents the distribution of ages for victims in a specific area. The box indicates the interquartile range (IQR) — the middle 50% of data. The horizontal line inside each box marks the median age. The "whiskers" extend to show the range of the data, excluding outliers. Dots beyond the whiskers represent outliers, which are ages that fall significantly outside the typical range for that area. Overall，some areas may have younger or older median victim ages. Areas with taller boxes or whiskers have more variability in victim ages.
+
+### Crime Severity Distribution By Age Group
 ```{r warning=FALSE, message=FALSE}
 # Crime Severity Distribution by Age Group
 data$severity_label <- ifelse(data$part_1_2 == 1, "Serious", "Less Serious")
@@ -97,11 +123,11 @@ ggplot(data[!is.na(data$vict_age), ], aes(x = age_group, fill = severity_label))
   
 ```
 
-The figure showing the proportion of crime severity categories for each age group. For juveniles, the proportion of serious crimes is relatively low (about 30%), with the remaining 70% being less serious crimes. For young adults, the proportion of serious crimes increases to aroung 55% and the remaining are less serious crimes. For middle-aged people and the elders, the pattern is similar to young adults, with slightly fewer serious crimes.
+The figure showing the proportion of crime severity categories for each age group. For juveniles, the proportion of serious crimes is relatively low (about 30%), with the remaining 70% being less serious crimes. For young adults, the proportion of serious crimes increases to aroung 55% and the remaining are less serious crimes. For middle-aged people and the elders, the pattern is similar to young adults, with slightly fewer serious crimes.\
+\
+This visualization highlights how crime severity is distributed across age groups. The proportion of serious crimes tends to decrease with increasing age groups, except for the juvenile. Juveniles are involved in a lower proportion of serious crimes compared to older age groups.\
 
-This visualization highlights how crime severity is distributed across age groups. The proportion of serious crimes tends to decrease with increasing age groups, except for the juvenile. Juveniles are involved in a lower proportion of serious crimes compared to older age groups.
-
-
+## Gender Distribution of Victims By Severity
 ```{r warning=FALSE, message=FALSE}
 # Calculate the proportion of crime severity for each gender
 # Filter out rows where vict_sex is "-" or NA
@@ -152,7 +178,7 @@ ggplot(severity_gender_data, aes(x = "", y = percentage, fill = severity_label))
 ```
 The chart provides a clear comparison of crime severity levels across gender categories, highlighting distinct patterns in crime involvement based on gender. Each pie chart represents the proportion of crime severity levels for different gender categories. Intersex/Other has the highest proportion of Serious crimes (62.5%), followed by the Unknown category (60.7%) and Males (59.7%). Females have the highest proportion of Less Serious crimes (56.1%). There is a clear pattern where males and non-binary categories (Intersex/Other, Unknown) are associated with a greater proportion of serious crimes, while females have a higher association with less serious crimes.
 
-
+## Racial Distribution of Victims
 ```{r warning=FALSE, message=FALSE}
 # Filter data to remove invalid or missing race entries
 clean_data <- data %>%
@@ -204,7 +230,8 @@ ggplot(race_distribution, aes(x = "", y = percentage, fill = vict_descent)) +
 
 This pie chart highlights the racial diversity of the victim population, representing the proportions of victims belonging to different racial categories. The Hispanic group forms the largest percentage of victims, comprising over a third of the total population. White and Black victims are the next most represented groups, with White victims being significantly higher than Black. Unknown and Others categories form smaller, but still notable, portions of the distribution.
 
-
+## Two Factors Analysis
+### Crime Severity Distribution by Age Group and Gender
 ```{r warning=FALSE, message=FALSE}
 # crime severity with age and gender
 ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_sex) & data$vict_sex != "H", ], aes(x = age_group, fill = severity_label)) +
@@ -246,7 +273,7 @@ Crime counts are minimal across all age groups, but young adults and middle-aged
 
 Overall, males commit more serious crimes, especially among young adults and middle-aged groups, compared to females. Non-binary/other individuals have relatively low crime counts across all groups. Young adults and middle-aged people dominate in crime counts, while juveniles and the elderly have lower crime involvement across all genders.
 
-
+### Crime Severity by Age Group and Race
 ```{r warning=FALSE, message=FALSE}
 # Crime Severity with Age Group and Race
 ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_descent) & data$vict_descent != "-", ], 
@@ -265,25 +292,4 @@ ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_descent) & data$vict_descen
 
 This faceted stacked bar chart provides a detailed view of how crime severity varies across age groups and racial categories, allowing for analysis of demographic patterns. Young adults and middle-aged people generally dominate in terms of crime proportions across most racial categories. Juveniles and the elderly consistently have smaller proportions of crimes in all racial categories. The proportion of serious crimes tends to vary across racial groups and age groups. In some racial categories (e.g., D, S, V), serious crimes are slightly higher for young adults and middle-aged groups. In other racial categories (e.g., A, K, X), the proportions of less serious crimes (purple) dominate across all age groups.
 
-```{r warning=FALSE, message=FALSE}
-# Create a boxplot showing age distribution by area
-box_age_area <- ggplot(data, aes(x = area_name, y = vict_age, fill = area_name)) +
-  geom_boxplot(outlier.color = "black", outlier.size = 0.5, alpha = 0.7) + 
-  theme_minimal() +
-  labs(
-    title = "Age Distribution by Area",
-    x = "Area",
-    y = "Victim Age",
-    fill = "Area"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "none")                          
-
-# Display the plot
-ggplotly(box_age_area)
-
-```
-
-This box plot visualization provides insights into how victim age varies across different areas, showing both central tendencies (medians) and variability (IQRs and ranges). Each box plot represents the distribution of ages for victims in a specific area. The box indicates the interquartile range (IQR) — the middle 50% of data. The horizontal line inside each box marks the median age. The "whiskers" extend to show the range of the data, excluding outliers. Dots beyond the whiskers represent outliers, which are ages that fall significantly outside the typical range for that area. Overall，some areas may have younger or older median victim ages. Areas with taller boxes or whiskers have more variability in victim ages.
 
