@@ -1,10 +1,11 @@
 ---
 title: "Predict the severity of crime"
 author: "Yunjia Liu"
-date: "2024-11-20"
 output: 
   html_document:
-    code_folding: show
+    code_folding: hide
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -13,9 +14,12 @@ library(caret)
 library(tidyverse)
 library(ROCR)
 library(viridis)
+library(ggplot2)
+library(dplyr)
+library(patchwork)
 ```
 
-## 1.Load and clean the dataset.
+## Prepare the dataset
 
 Here are some key steps in this part. \
 
@@ -42,8 +46,6 @@ crime_data = read.csv(file ="./data/crime_data_LA.csv", row.names = 1) |>
 
 ```
 
-## 2.Prepare the training set and invidividual testing test. 
-
 We separate the data into train and test into 8:2 by stratified sampling so that we will reach at a balanced the train and test set to avoid any possible bias from the spliting. Also, Stratified sampling maintains the class distribution in both training and testing sets, ensuring the model is evaluated fairly on the test set.
 ```{r}
 # Split the data
@@ -65,33 +67,39 @@ xgb_train = xgb.DMatrix(data = train_x, label = train_y)
 xgb_test = xgb.DMatrix(data = test_x, label = test_y)
 ```
 
-Distribution of crime severity in **original dataset** (`0` stands for serious crime and `1` stands for less serious)
+Distribution of crime severity in **original dataset**,**training** and **testing dataset** (`0` stands for serious crime and `1` stands for less serious)
 ```{r}
-table(crime_data$serious_level) / nrow(crime_data)
+crime_data_proportions <- table(crime_data$serious_level) / nrow(crime_data)
+train_proportions <- table(train$serious_level) / nrow(train)
+test_proportions <- table(test$serious_level) / nrow(test)
+
+# Combine proportions into a single data frame
+combined_table <- data.frame(
+  Serious_Level = names(crime_data_proportions),
+  Crime_Data = as.vector(crime_data_proportions),
+  Training_Data = as.vector(train_proportions),
+  Testing_Data = as.vector(test_proportions)
+)
+
+# Use knitr::kable to display the combined table
+knitr::kable(
+  combined_table,
+  col.names = c("Serious Level", "Crime Data Proportion", "Training Data Proportion", "Testing Data Proportion"),
+  caption = "Distribution of Serious Levels Across Datasets"
+)
 ```
 
-Distribution of crime severity in **training** dataset (`0` stands for serious crime and `1` stands for less serious)
-```{r}
-table(train$serious_level) / nrow(train)
-```
-
-Distribution of crime severity in **testing dataset** (`0` stands for serious crime and `1` stands for less serious)
-```{r}
-table(test$serious_level) / nrow(test)
-```
-
-These 3 tables suggests that stratified sampling has been done correctly and reached our expectation intending to aviod bias caused by dataset spliting.
+The table suggests that stratified sampling has been done correctly and reached our expectation intending to aviod bias caused by dataset spliting.
 
 
-
-### 3. Train the Model.
+## Model Training with grid search
 We save the model to the repository only the first time to avoid repeated calculation. Although we didn't show the exact the parameters adjustment steps here, we use **grid_search** to find the parameter group with the best performance.
 
 ```{r}
 # Train the final model with the best parameters
 if (!file.exists("pred_models/xgboost_model.model")) {
   
-  param_grid <- expand.grid(
+  param_grid = expand.grid(
   max_depth = c(4, 6, 8),
   eta = c(0.01, 0.1, 0.3),
   min_child_weight = c(1, 3, 5),
@@ -100,12 +108,12 @@ if (!file.exists("pred_models/xgboost_model.model")) {
 )
 
 # Placeholder for best parameters and best logloss
-best_logloss <- Inf
-best_params <- NULL
+best_logloss = Inf
+best_params = NULL
 
 # Grid search
 for (i in 1:nrow(param_grid)) {
-  params <- list(
+  params = list(
     objective = "binary:logistic",  
     eval_metric = "logloss",       # Ensure logloss is the evaluation metric
     max_depth = param_grid$max_depth[i],
@@ -116,10 +124,10 @@ for (i in 1:nrow(param_grid)) {
   )
   
   # Watchlist for evaluation
-  watchlist <- list(train = xgb_train, test = xgb_test)
+  watchlist = list(train = xgb_train, test = xgb_test)
   
   # Train the model
-  xgb_model <- xgb.train(
+  xgb_model = xgb.train(
     params = params,
     data = xgb_train,
     nrounds = 300,
@@ -128,12 +136,12 @@ for (i in 1:nrow(param_grid)) {
   )
   
   # Extract test logloss
-  logloss <- as.numeric(xgb_model$evaluation_log[nrow(xgb_model$evaluation_log), "test_logloss"])
+  logloss = as.numeric(xgb_model$evaluation_log[nrow(xgb_model$evaluation_log), "test_logloss"])
   
   # Update best parameters if current logloss is better
   if (logloss < best_logloss) {
-    best_logloss <- logloss
-    best_params <- params
+    best_logloss = logloss
+    best_params = params
   }
 }
 
@@ -142,7 +150,7 @@ cat("Best Parameters:\n")
 print(best_params)
 cat("Best Logloss: ", best_logloss, "\n")
 
-  best_model <- xgb.train(
+  best_model = xgb.train(
     params = best_params,
     data = xgb_train,
     nrounds = 300,
@@ -153,38 +161,30 @@ cat("Best Logloss: ", best_logloss, "\n")
   xgb.save(best_model, "pred_models/xgboost_model.model")
   cat("Model saved to 'xgboost_model.model'\n")
 } else {
-  best_model <- xgb.load("pred_models/xgboost_model.model")
+  best_model = xgb.load("pred_models/xgboost_model.model")
   cat("Model loaded from 'xgboost_model.model'\n")
 }
 ```
 
-### 4. Evaluation
+## Model Evaluation
 
 
 ```{r}
-predictions <- predict(best_model, test_x, type = "prob")  # Assuming `type = "prob"` gives probabilities
+predictions = predict(best_model, test_x, type = "prob")  # Assuming `type = "prob"` gives probabilities
 
-pred <- prediction(predictions, test_y)
+pred = prediction(predictions, test_y)
 ```
 
 #### The performance table of the model.
-We made a table summarizing the evaluation metrics (AUC, Accuracy, Precision, Recall, F1 Score) is printed in a clean format. \
 
-(1) AUC (Area Under the Curve), valued at 0.8238, indicating that the model has strong discriminatory power to separate positive and negative classes (closer to 1 is ideal); \
-(2) Accuracy, at 0.7441, reflects the model's overall correctness, with approximately 74.4% of predictions being accurate; \
-(3) Precision (Pos Pred Value), at 0.7676, reveals that ~76.8% of predicted positives are truly positive, indicating reliability in positive predictions;  \
-(4) Recall (Sensitivity), at 0.8173, measures the model's ability to correctly identify ~81.7% of actual positives, showing strong sensitivity \ 
-(5) the F1 Score, at 0.7917, balances precision and recall, making it suitable for imbalanced datasets.
-
-
-```{r}
+```{r fig.align='center'}
 # Convert predicted probabilities to binary predictions using a 0.5 threshold
 pred_labels = ifelse(predictions > 0.5, 1, 0)
 
-pred_labels <- factor(pred_labels, levels = c(0, 1))
+pred_labels = factor(pred_labels, levels = c(0, 1))
 
 # Create a confusion matrix
-conf_mat <- confusionMatrix(pred_labels, factor(test_y))
+conf_mat = confusionMatrix(pred_labels, factor(test_y))
 
 # Extract evaluation metrics from the confusion matrix
 accuracy = conf_mat$overall['Accuracy']
@@ -206,11 +206,20 @@ metrics_table =
 metrics_table |> knitr::kable(digits = 4)
 ```
 
-#### The ROC Curve of the model.
+We made a table summarizing the evaluation metrics (AUC, Accuracy, Precision, Recall, F1 Score) is printed in a clean format. \
+
+(1) AUC (Area Under the Curve), valued at 0.8238, indicating that the model has strong discriminatory power to separate positive and negative classes (closer to 1 is ideal); \
+(2) Accuracy, at 0.7441, reflects the model's overall correctness, with approximately 74.4% of predictions being accurate; \
+(3) Precision (Pos Pred Value), at 0.7676, reveals that ~76.8% of predicted positives are truly positive, indicating reliability in positive predictions;  \
+(4) Recall (Sensitivity), at 0.8173, measures the model's ability to correctly identify ~81.7% of actual positives, showing strong sensitivity \ 
+(5) the F1 Score, at 0.7917, balances precision and recall, making it suitable for imbalanced datasets.
+
+
+#### The ROC Curve of the model
 
 The ROC Curve visually complements the table by plotting the True Positive Rate (Sensitivity) against the False Positive Rate (1 - Specificity) for different thresholds. The blue curve shows the model's superior performance, remaining significantly above the green diagonal line, which represents random guessing, with the steepness and height of the curve near the top-left corner further validating its strength.
 
-```{r}
+```{r fig.align='center'}
 # Plot the ROC Curve
 perf = performance(pred, measure = "tpr", x.measure = "fpr")
 plot(perf, col = "#39568CFF", main = "ROC Curve", lwd = 2.5)
@@ -222,7 +231,7 @@ abline(a = 0, b = 1, col = "#20A387FF", lty = 2, lwd = 2)
 
 This feature importance chart demonstrates that **location type (premis_cd)** and **racial or ethnic background of the victim (vict_descent)** are the most influential factors in predicting the model's target variable. Meanwhile, features like the crime's area or specific date contribute less significantly. This information is valuable for model interpretation and could guide future feature engineering or data collection priorities.
 
-```{r}
+```{r fig.align='center'}
 feature_names = colnames(train_x)
 importance_matrix = xgb.importance(feature_names = feature_names, model = best_model)
 
@@ -242,3 +251,80 @@ ggplot(importance_df, aes(x = Feature, y = Gain, fill = Feature)) +
   )
 
 ```
+
+#### Visualizing Cumulative Gains and Lift Charts 
+
+```{r}
+test = 
+  test |>
+  mutate(predicted_prob = predictions) |>
+  arrange(desc(predicted_prob)) |>
+  mutate(
+    cumulative_positive = cumsum(serious_level),  # Cumulative count of positives
+    cumulative_total = row_number(),             # Cumulative count of total records
+    cumulative_gain = cumulative_positive / sum(serious_level) * 100,  # Cumulative gain percentage
+    lift = cumulative_positive / cumulative_total / (sum(serious_level) / nrow(test))  # Lift
+  )
+
+# Step 2: Divide into 10 groups (Deciles) based on predicted probabilities
+test =
+  test |>
+  mutate(decile = ntile(predicted_prob, 10))  # Create 10 equal groups based on predicted probabilities
+
+# Step 3: Calculate cumulative gains and lift for each Decile
+gain_lift = 
+  test |>
+  group_by(decile) |>
+  summarise(
+    total_in_decile = n(),
+    positives_in_decile = sum(serious_level),
+    cumulative_positives = max(cumulative_positive),
+    cumulative_gain = max(cumulative_gain),
+    lift = max(lift)
+  )
+```
+
+
+```{r fig.align='center'}
+# Step 4: Plot Cumulative Gains Chart
+gains_plot =
+  ggplot(gain_lift, aes(x = decile, y = cumulative_gain)) +
+  geom_line(color =  "#39568CFF") +
+  geom_point(color =  "#39568CFF") +
+  labs(
+    title = "Cumulative Gains Chart",
+    x = "Decile",
+    y = "Cumulative Gain (%)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
+# Step 5: Plot Lift Chart
+lift_plot =
+  ggplot(gain_lift, aes(x = decile, y = lift)) +
+  geom_line(color = "#1f9e89") +
+  geom_point(color = "#1f9e89") +
+  labs(
+    title = "Lift Chart",
+    x = "Decile",
+    y = "Lift"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
+combined_plot = gains_plot + lift_plot
+
+print(combined_plot)
+```
+
+
+For **Cumulative Gains Chart**, the curve starts at 0% and increases steeply for the initial deciles, indicating that the top deciles contain the highest proportion of the target class. The curve flattens after the top deciles, reflecting diminishing returns as more deciles are included. \
+
+For **Lift Chart**, lift values are highest for the first few deciles, showing the model's strong ability to concentrate the target class in the top groups. Lift gradually decreases as more deciles are included, approaching the baseline (lift = 1) in the later deciles. \
+
+\
+The steep cumulative gain in the initial deciles and high lift values indicate the model is effective in prioritizing the target class (e.g., high-severity crimes) in the top percentile groups. These charts demonstrate that the model performs significantly better than random predictions in identifying and concentrating the target class.
