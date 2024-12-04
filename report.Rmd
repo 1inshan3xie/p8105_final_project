@@ -50,7 +50,7 @@ After finished on analyzing patterns and trends in crime occurrences based on va
 
 \
 
-We specifically selected data from 2023 instead of including all available time periods. This decision was made because 2023 represents the most recent year with complete data and is unaffected by the disruptions caused by the pandemic, ensuring a clearer and more relevant analysis.
+For the shiny, we specifically selected data from 2023 instead of including all available time periods. This decision was made because 2023 represents the most recent year with complete data and is unaffected by the disruptions caused by the pandemic, ensuring a clearer and more relevant analysis.
 
 \
 
