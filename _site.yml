@@ -17,7 +17,7 @@ navbar:
       - text: "Time Trend"
         href: time.html
       - text: "Location"
-        href: https://p8105finalproject.s3.us-east-2.amazonaws.com/location.html
+        href: "https://p8105finalproject.s3.us-east-2.amazonaws.com/location.html"
     - text: "Prediction"
       href: prediction.html
     - text: "Shiny App"
