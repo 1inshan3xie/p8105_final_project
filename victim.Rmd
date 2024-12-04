@@ -202,6 +202,9 @@ ggplot(race_distribution, aes(x = "", y = percentage, fill = vict_descent)) +
   )
 ```
 
+This pie chart highlights the racial diversity of the victim population, representing the proportions of victims belonging to different racial categories. The Hispanic group forms the largest percentage of victims, comprising over a third of the total population. White and Black victims are the next most represented groups, with White victims being significantly higher than Black. Unknown and Others categories form smaller, but still notable, portions of the distribution.
+
+
 ```{r warning=FALSE, message=FALSE}
 # crime severity with age and gender
 ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_sex) & data$vict_sex != "H", ], aes(x = age_group, fill = severity_label)) +
@@ -219,6 +222,21 @@ ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_sex) & data$vict_sex != "H"
   )
 ```
 
+This grouped bar chart provides a detailed view of how crime severity differs across gender and age groups, highlighting significant trends in both dimensions. 
+//For Females (F): 
+//Young adults have the highest crime counts, with less serious crimes being slightly more frequent than serious crimes. 
+//Middle-aged people also show significant crime counts, though less than young adults, and the pattern between crime severities is similar.
+//Crime counts for juveniles and the elderly are much lower.
+//For Males (M):
+//Young adults dominate in crime counts, with serious crimes being more frequent than less serious ones (reversing the trend seen in females).
+//Middle-aged people follow with high counts, though less than young adults, and serious crimes still dominate.
+//Crime counts for juveniles and the elderly are low, similar to females.
+//For Non-Binary/Other (X):
+//Crime counts are minimal across all age groups, but young adults and middle-aged people have slightly higher counts compared to juveniles and the elderly.
+
+Overall, males commit more serious crimes, especially among young adults and middle-aged groups, compared to females. Non-binary/other individuals have relatively low crime counts across all groups. Young adults and middle-aged people dominate in crime counts, while juveniles and the elderly have lower crime involvement across all genders.
+
+
 ```{r warning=FALSE, message=FALSE}
 # Crime Severity with Age Group and Race
 ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_descent) & data$vict_descent != "-", ], 
@@ -235,6 +253,7 @@ ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_descent) & data$vict_descen
   )
 ```
 
+This faceted stacked bar chart provides a detailed view of how crime severity varies across age groups and racial categories, allowing for analysis of demographic patterns. Young adults and middle-aged people generally dominate in terms of crime proportions across most racial categories. Juveniles and the elderly consistently have smaller proportions of crimes in all racial categories. The proportion of serious crimes tends to vary across racial groups and age groups. In some racial categories (e.g., D, S, V), serious crimes are slightly higher for young adults and middle-aged groups. In other racial categories (e.g., A, K, X), the proportions of less serious crimes (purple) dominate across all age groups.
 
 ```{r warning=FALSE, message=FALSE}
 # Create a boxplot showing age distribution by area
@@ -255,4 +274,6 @@ box_age_area <- ggplot(data, aes(x = area_name, y = vict_age, fill = area_name))
 ggplotly(box_age_area)
 
 ```
+
+This box plot visualization provides insights into how victim age varies across different areas, showing both central tendencies (medians) and variability (IQRs and ranges). Each box plot represents the distribution of ages for victims in a specific area. The box indicates the interquartile range (IQR) — the middle 50% of data. The horizontal line inside each box marks the median age. The "whiskers" extend to show the range of the data, excluding outliers. Dots beyond the whiskers represent outliers, which are ages that fall significantly outside the typical range for that area. Overall，some areas may have younger or older median victim ages. Areas with taller boxes or whiskers have more variability in victim ages.
 
