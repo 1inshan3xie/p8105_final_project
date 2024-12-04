@@ -324,13 +324,9 @@ print(combined_plot)
 ```
 
 
-Cumulative Gains Chart: \
+For **Cumulative Gains Chart**, the curve starts at 0% and increases steeply for the initial deciles, indicating that the top deciles contain the highest proportion of the target class. The curve flattens after the top deciles, reflecting diminishing returns as more deciles are included. \
 
-The curve starts at 0% and increases steeply for the initial deciles, indicating that the top deciles contain the highest proportion of the target class. The curve flattens after the top deciles, reflecting diminishing returns as more deciles are included. \ 
-
-Lift Chart: \
-
-Lift values are highest for the first few deciles, showing the model's strong ability to concentrate the target class in the top groups. Lift gradually decreases as more deciles are included, approaching the baseline (lift = 1) in the later deciles. \
+For **Lift Chart**, lift values are highest for the first few deciles, showing the model's strong ability to concentrate the target class in the top groups. Lift gradually decreases as more deciles are included, approaching the baseline (lift = 1) in the later deciles. \
 
 \
 The steep cumulative gain in the initial deciles and high lift values indicate the model is effective in prioritizing the target class (e.g., high-severity crimes) in the top percentile groups. These charts demonstrate that the model performs significantly better than random predictions in identifying and concentrating the target class.
