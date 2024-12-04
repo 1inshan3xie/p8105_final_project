@@ -12,19 +12,19 @@ output:
 
 ## Motivation
 Los Angeles is a city of vibrant diversity and a lively urban landscape—but it’s also a city where the dynamics of crime can vary widely across neighborhoods, demographic groups, and even times of day. For law enforcement, policymakers, and community members alike, understanding these complex crime patterns is key to fostering safer and more resilient communities.\
-Our project dives into the Los Angeles Police Department crime dataset to uncover the "who, what, where, and when" of crime across LA's diverse neighborhoods. We're on a mission to decode the patterns of crime by exploring how different demographics, time frames, and locations shape the city's unique crime profile. Whether it's catching late-night trends, uncovering hotspots, or spotlighting demographic factors, we’re here to map the hidden story of LA’s crime scene and uncover what drives certain areas' steady patterns—or sudden disruptions!
+Our project dives into the Los Angeles Police Department crime dataset to uncover the "who, what, where, and when" of crime across LA's diverse neighborhoods. We're on a mission to decode the patterns of crime by exploring how different demographics, time frames, and locations shape the city's unique crime profile. Whether it's catching late-night trends, uncovering hotspots, or spotlighting demographic factors, we’re here to map the hidden story of LA’s crime scene and uncover what drives certain areas' steady patterns—or sudden disruptions!\
 
 \
 
 ## Related work
-For HW5, we worked with data on homicides in 50 large U.S. cities. Our group found this dataset incredibly meaningful and decided to explore it further. To expand our research, we selected the "Crime Patterns and Trends in Recent Years - LA" dataset. This dataset includes latitude and longitude information, which inspired us to create a map-based visualization.
+For HW5, we worked with data on homicides in 50 large U.S. cities. Our group found this dataset incredibly meaningful and decided to explore it further. To expand our research, we selected the "Crime Patterns and Trends in Recent Years - LA" dataset. This dataset includes latitude and longitude information, which inspired us to create a map-based visualization.\
 
 \
-Building on the Shiny introduced in class, we realized that Shiny would be an excellent tool for analyzing and visualizing this dataset. By implementing interactive filters, we can create dynamic visualizations tailored to specific insights we want to uncover. Overall, this assignment and the course material have been instrumental in motivating us to select this dataset and approach, providing both the direction and tools for our project.
+Building on the Shiny introduced in class, we realized that Shiny would be an excellent tool for analyzing and visualizing this dataset. By implementing interactive filters, we can create dynamic visualizations tailored to specific insights we want to uncover. Overall, this assignment and the course material have been instrumental in motivating us to select this dataset and approach, providing both the direction and tools for our project.\
 
 \
 
-By utilizing advanced visualization and analysis tools, we aim to contribute to a deeper understanding of these issues, potentially helping policymakers and communities address crime more comprehensively.
+By utilizing advanced visualization and analysis tools, we aim to contribute to a deeper understanding of these issues, potentially helping policymakers and communities address crime more comprehensively.\
 
 \
 
@@ -50,7 +50,7 @@ The source dataset is the Los Angeles Police Department (LAPD) crime dataset, wh
 -   `status`: Description of the case status. (eg. Invest Cont, Juv Other).\
 -   `lat`: Latitude coordinates of the crime location.\
 -   `long`: Longitude coordinates of the crime location.\
-
+\
 
 ## Exploratory analysis
 The Exploratory analysis of our project is divided into three main sections: Victim Demographic, Time Trend, and Location.\
@@ -65,7 +65,6 @@ After finished on analyzing patterns and trends in crime occurrences based on va
 \
 For the shiny, we specifically selected data from 2023 instead of including all available time periods. This decision was made because 2023 represents the most recent year with complete data and is unaffected by the disruptions caused by the pandemic, ensuring a clearer and more relevant analysis.
 \
-
 
 
 ## Additional analysis
