@@ -86,7 +86,10 @@ Using chi-squared test combining with heatmaps, we can find significant differen
 
 
 ## Discussion
-
+This project provides a comprehensive analysis of crime patterns in Los Angeles, utilizing data from the LAPD to explore the dynamics of crime across various time scales and geographic locations. By examining crime trends from different temporal perspectives—yearly, seasonal, weekday, and hourly—we uncovered significant variations in crime severity and frequency. The project also explored spatial trends, revealing that certain areas experience higher crime rates, which are strongly associated with specific types of premises. Interactive visualizations created using Shiny allowed for dynamic exploration of these trends, providing insights into how crime evolves over time and across different neighborhoods.\
+\
+However, this analysis has several limitations. The dataset only includes reported crimes, which may not fully represent the entire scope of criminal activity, especially incidents that go unreported. Another limitation of this analysis is its reliance on aggregated data, which may obscure granular details or patterns unique to specific neighborhoods or communities. Aggregation can sometimes mask disparities in crime rates and prevent a nuanced understanding of localized issues. Future research could expand the analysis by incorporating additional variables, such as socio-economic conditions or environmental factors, to better understand the underlying causes of crime. Enhancing the analysis with machine learning techniques could also improve the accuracy of crime severity predictions, offering more precise and actionable insights for law enforcement and policymakers to make informed decisions.\
+\
 
 
 ## Data Source
