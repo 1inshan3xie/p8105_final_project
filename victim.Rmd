@@ -1,30 +1,247 @@
 ---
-title: "victim"
-author: "Tingyu Qian"
-date: "2024-11-20"
-output: html_document
+title: "Victim Demographics"
+output: 
+  html_document:
+    code_folding: hide
+    always_allow_html: true
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(kableExtra)
+library(plotly)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis")
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+data <- read_csv("data/crime_data_LA.csv",show_col_types = FALSE)
 ```
 
-## R Markdown
+```{r warning=FALSE, message=FALSE}
+# Notice that age 0 stands for NA
+data$vict_age[data$vict_age == 0] <- NA
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# age distribution
+ggplot(data, aes(x = vict_age)) +
+  geom_histogram(binwidth = 5, fill = "#433E85FF", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Age Distribution of Victims", x = "Age", y = "Frequency") 
+  
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# divide age into four categories
+data$age_group <- cut(
+  data$vict_age,
+  breaks = c(-Inf, 18, 40, 60, Inf),
+  labels = c("juvenile", "Young adult", "Middle-aged people", "The elderly"),
+  right = FALSE
+)
 
-```{r cars}
-summary(cars)
+#
+ggplot(data[!is.na(data$vict_age), ], aes(x = age_group)) +
+  geom_bar(fill = "#25858EFF", color = "black", alpha = 0.7) +
+  theme_minimal() +
+  labs(
+    title = "Age Group Distribution of Victims",
+    x = "Age Group",
+    y = "Count"
+  )
 ```
 
-## Including Plots
+```{r warning=FALSE, message=FALSE}
+# Crime Severity Distribution by Age Group
+data$severity_label <- ifelse(data$part_1_2 == 1, "Serious", "Less Serious")
 
-You can also embed plots, for example:
+# Significant test: the relationship between different age groups and crime severity
+# turn severity into factor
+data$severity_label <- as.factor(data$severity_label)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# Chi-squre test
+severity_age_table <- table(data$age_group, data$severity_label)
+chisq_test <- chisq.test(severity_age_table)
+print(chisq_test)
+
+# output
+if (chisq_test$p.value < 0.05) {
+  print("Age group has a statistically significant relationship with crime severity.")
+} else {
+  print("No significant relationship between age group and crime severity.")
+}
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r warning=FALSE, message=FALSE}
+ggplot(data[!is.na(data$vict_age), ], aes(x = age_group, fill = severity_label)) +
+  geom_bar(position = "fill", alpha = 0.7) +
+  theme_minimal() +
+  labs(
+    title = "Crime Severity Distribution by Age Group",
+    x = "Age Group",
+    y = "Proportion",
+    fill = "Crime Severity"
+  )
+  
+```
+
+```{r warning=FALSE, message=FALSE}
+# Calculate the proportion of crime severity for each gender
+# Filter out rows where vict_sex is "-" or NA
+clean_data <- data[!is.na(data$vict_sex) & data$vict_sex != "-", ]
+
+# Recode gender codes with clearer labels
+clean_data <- clean_data %>%
+  mutate(gender_label = recode(vict_sex,
+                               "F" = "Female",
+                               "M" = "Male",
+                               "H" = "Intersex/Other",
+                               "X" = "Unknown"))
+
+# Calculate the proportion of crime severity for each gender
+severity_gender_data <- clean_data %>%
+  group_by(severity_label, gender_label) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  complete(severity_label, gender_label, fill = list(count = 0)) %>%
+  group_by(gender_label) %>%
+  mutate(percentage = count / sum(count) * 100)
+
+severity_gender_table <- severity_gender_data %>%
+  arrange(gender_label, desc(percentage))
+
+# Display the table
+kable(severity_gender_table, format = "html", caption = "Crime Severity by Gender and Percentage") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+# Plot the pie chart with values annotated
+ggplot(severity_gender_data, aes(x = "", y = percentage, fill = severity_label)) +
+  geom_bar(stat = "identity", width = 1, alpha = 0.7) +
+  coord_polar(theta = "y") +
+  facet_wrap(~ gender_label) +  # Use the recoded gender labels
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 4) + # Add percentage labels
+  theme_minimal() +
+  labs(
+    title = "Crime Severity Distribution by Gender",
+    x = NULL,
+    y = NULL,
+    fill = "Crime Severity"
+  ) +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
+
+```
+
+```{r warning=FALSE, message=FALSE}
+# Filter data to remove invalid or missing race entries
+clean_data <- data %>%
+  filter(!is.na(vict_descent) & vict_descent != "-")
+
+# Map race codes to full descriptions and group small groups as "Others"
+clean_data <- clean_data %>%
+  mutate(
+    vict_descent = recode(vict_descent,
+                          "B" = "Black",       # Map "B" to "Black"
+                          "H" = "Hispanic",    # Map "H" to "Hispanic"
+                          "W" = "White",       # Map "W" to "White"
+                          "X" = "Unknown",     # Map "X" to "Unknown"
+                          "O" = "Others",      # Map "O" to "Others"
+                          .default = "Others") # Group any unspecified codes as "Others"
+  )
+
+# Step 3: Calculate the proportion of each race
+race_distribution <- clean_data %>%
+  group_by(vict_descent) %>%
+  summarise(count = n(), .groups = "drop") %>%          
+  mutate(percentage = count / sum(count) * 100) %>%       
+  mutate(vict_descent = ifelse(percentage < 5 | vict_descent == "Others", 
+                               "Others", vict_descent)) %>% 
+  # Merge small groups (<5%) into "Others"
+  group_by(vict_descent) %>%
+  summarise(count = sum(count), percentage = sum(percentage), .groups = "drop") 
+# Recalculate totals
+
+# Create the pie chart
+ggplot(race_distribution, aes(x = "", y = percentage, fill = vict_descent)) +
+  geom_bar(stat = "identity", width = 1, alpha = 0.7) + 
+  coord_polar(theta = "y") +               
+  theme_minimal() +                        
+  labs(
+    title = "Racial Distribution of Victims", 
+    x = NULL,                                
+    y = NULL,                                
+    fill = "Race"                       
+  ) +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), 
+            position = position_stack(vjust = 0.5), size = 4) + 
+  theme(
+    axis.text = element_blank(),  
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank()  
+  )
+```
+
+```{r warning=FALSE, message=FALSE}
+# crime severity with age and gender
+ggplot(data[!is.na(data$vict_age), ], aes(x = age_group, fill = severity_label)) +
+  geom_bar(position = "dodge", alpha = 0.7) +
+  facet_wrap(~ vict_sex) +
+  theme_minimal() +
+  labs(
+    title = "Crime Severity Distribution by Age Group and Gender",
+    x = "Age Group",
+    y = "Count",
+    fill = "Crime Severity"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+```{r warning=FALSE, message=FALSE}
+# Crime Severity with Age Group and Race
+ggplot(data[!is.na(data$vict_age) & !is.na(data$vict_descent) & data$vict_descent != "-", ], 
+       aes(x = age_group, fill = severity_label)) +
+  geom_bar(position = "fill", alpha = 0.7) +
+  facet_wrap(~ vict_descent) +
+  theme_minimal() +
+  labs(title = "Crime Severity by Age Group and Race", 
+       x = "Age Group", 
+       y = "Proportion", 
+       fill = "Crime Severity") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+
+```{r warning=FALSE, message=FALSE}
+# Create a boxplot showing age distribution by area
+box_age_area <- ggplot(data, aes(x = area_name, y = vict_age, fill = area_name)) +
+  geom_boxplot(outlier.color = "black", outlier.size = 0.5, alpha = 0.7) + # Boxplot with outliers
+  theme_minimal() +
+  labs(
+    title = "Age Distribution by Area",
+    x = "Area",
+    y = "Victim Age",
+    fill = "Area"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x-axis labels for readability
+    legend.position = "none"                           # Remove legend (redundant with x-axis)
+  )
+
+# Display the plot
+ggplotly(box_age_area)
+
+```
+
