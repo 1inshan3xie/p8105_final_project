@@ -68,6 +68,17 @@ For the shiny, we specifically selected data from 2023 instead of including all 
 
 
 ## Additional analysis
+1. Chi-Squared Test\
+1.1 Chi-Squared Test Between Age Group and Crime Severity\
+(xyw's part)
+\
+1.2 Chi-Squared Test Between Different Time Period and Crime Severity\
+The chi-squared statistic for yearl-difference is 387.8, p-value < 2.2e-16; while for seasonal difference, the X-squared = 58.749, p-value = 1.088e-12. For difference between weekdays, the X-squared = 262.23, whose p-value is less than 2.2e-16. And for the difference in different hour period of the day, the X-squared is 13747,p-value < 2.2e-16. All these test result shows that there are significant differences in the distribution of severity of cases between different year, seasons, weekdays and hour periods of the day.\
+\
+1.3 Chi-Squared Test\
+Using chi-squared test combining with heatmaps, we can find significant differences of crime serious levels in different areas and premise types. Also, the premise types of crimes in different areas are also significantly different. In testing relationship between crime seriousness level and areas, the Chi-Square Statistic is 2858.69, indicating a very high dependence between serious level and area in LA. In testing relationship between the type of premises and the serious level of incidents, the Chi-Square statistic is 182154.31, indicating a very high dependence between serious level and premises types. In testing the relationship between the type of premises and different areas, the Chi-Square statistic is 179318.97, indicating a very high dependence between areas and premises types. \
+
+2. Prediction of the Crime Serverity\
 
 
 
