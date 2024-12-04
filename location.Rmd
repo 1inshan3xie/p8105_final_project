@@ -185,7 +185,7 @@ options(tigris_use_cache = TRUE)
 sf::sf_use_s2(FALSE)
 ca_counties <- counties(state = "CA", cb = TRUE)
 la_county <- ca_counties[ca_counties$NAME == "Los Angeles", ]
-world_map <- map_data("county", region = "california,los angeles")
+#world_map <- map_data("county", region = "california,los angeles")
 locations <- data.frame(
   lon = crime_lat$lon,
   lat = crime_lat$lat,
