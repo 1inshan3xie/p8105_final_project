@@ -34,24 +34,36 @@ By utilizing advanced visualization and analysis tools, we aim to contribute to 
 
 
 ## Data
-The source data set contained 982638 observations and 28 variables. After the removal of observations with missing data, the "clean" data set used for site analyses had 2,824 observations and 36 variables. Variables for `day`, `month`, `year`, `date_assembled`, and `name` were added to the final data set after some manipulation was done to adjust the date variable. The name variable was created by randomly assigning squirrels names from an R generated list of first and last squirrel names. The `unique_squirrel_id` variable is a character variable of 11 values and characters, so it could be a mouthful when trying to consider individual observations. We also believe each squirrel deserves a fun name. The data used was collected between 2018-10-06 and 2018-10-20.
-
-The final data used for analysis, saved [here](https://github.com/fish-carolyn/p8105_squirrel_final.git), contains the following variables:\
--   `x`: Longitude.
--   `y`: Latitude.
--   `unique_squirrel_id`: Identification tag for each squirrel sightings. The tag is comprised of "Hectare ID" + "Shift" + "Date" + "Hectare Squirrel Number."
--   `hectare`: ID tag, which is derived from the hectare grid used to divide and count the park area. One axis that runs predominantly north-to-south is numerical (1-42), and the axis that runs predominantly east-to-west is roman characters (A-I).
--   `shift`: Value is either "AM" or "PM," to communicate whether or not the sighting session occurred in the morning or late afternoon.
--   `date`: Concatenation of the sighting session day and month.
+The source dataset is the Los Angeles Police Department (LAPD) crime dataset, which contains all cases received by the LAPD from January 1, 2020 to September 30, 2024, and contains 982638 observations and 28 variables. After deleting variables such as weapon_cd, weapon_desc, etc., which contain a large number of missing values, the variables that are not needed are further deleted according to the needs of this project.The final data used for analysis contains the following variables:\
+\
+-   `dr_no`: Unique identifier for each reported crime.\
+-   `date_occ`: Date the crime occurred.\
+-   `time_occ`: Time the crime occurred.\
+-   `serious_level`: Indicates whether the crime is a "1" (serious) or "2" (less serious) offense.
+-   `crime_type`: Description of the type of crime [eg.VEHICLE - STOLEN, VANDALISM - MISDEAMEANOR ($399 OR UNDER)]\
+-   `vict_age`: Age of the victim.\
+-   `vict_sex`: Sex of the victim.\
+-   `vict_descent`: Racial or ethnic background of the victim.\
+-   `rpt_dist_no`: Reporting district number.\
+-   `premis_cd`: Premises code (e.g., residential, commercial).\
+-   `premis_desc`: Concatenation of the sighting session day and month.
+-   `status`: Description of the case status. (eg. Invest Cont, Juv Other).\
+-   `lat`: Latitude coordinates of the crime location.\
+-   `long`: Longitude coordinates of the crime location.\
 
 
 ## Exploratory analysis
-After finished on analyzing patterns and trends in crime occurrences based on various time scales, such as yearly, seasonal, weekdays, and hourly, visualizing how crime evolves over time and across different dimensions, examing distribution of primary crime locations, exploring geospatial mapping data and modes of different crime types, as well as the number of crimes in each area. We decide to bring these insights to life, we chose to use Shiny to create an interactive dashboard. This allows users to apply filters based on different areas in LA and time trends, enabling them to observe crime counts and distributions dynamically.
-
+The Exploratory analysis of our project is divided into three main sections: Victim Demographic, Time Trend, and Location.\
 \
-
+(victim_demo part)
+\
+In the Time Trend analysis section, we examine crime data from four temporal perspectives: yearly, seasonally, weekdays, and hourly. Bar plots are used to show the total number of crimes for each time period, with stacked bar plots comparing the counts of serious and less serious crimes. To further explore spatial variations, interactive line charts created with `Plotly` visualize the temporal trends in crime counts across different areas. Finally, line charts are also used to display changes in crime counts over time by crime type, providing insights into patterns of criminal activity.\
+\
+(location part)
+\
+After finished on analyzing patterns and trends in crime occurrences based on various time scales, such as yearly, seasonal, weekdays, and hourly, visualizing how crime evolves over time and across different dimensions, examing distribution of primary crime locations, exploring geospatial mapping data and modes of different crime types, as well as the number of crimes in each area. We decide to bring these insights to life, we chose to use Shiny to create an interactive dashboard. This allows users to apply filters based on different areas in LA and time trends, enabling them to observe crime counts and distributions dynamically.\
+\
 For the shiny, we specifically selected data from 2023 instead of including all available time periods. This decision was made because 2023 represents the most recent year with complete data and is unaffected by the disruptions caused by the pandemic, ensuring a clearer and more relevant analysis.
-
 \
 
 
