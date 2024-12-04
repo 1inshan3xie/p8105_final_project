@@ -17,7 +17,12 @@ Our project dives into the Los Angeles Police Department crime dataset to uncove
 \
 
 ## Related work
+For HW5, we worked with data on homicides in 50 large U.S. cities. Our group found this dataset incredibly meaningful and decided to explore it further. To expand our research, we selected the "Crime Patterns and Trends in Recent Years - LA" dataset. This dataset includes latitude and longitude information, which inspired us to create a map-based visualization.
 
+\
+Building on the Shiny introduced in class, we realized that Shiny would be an excellent tool for analyzing and visualizing this dataset. By implementing interactive filters, we can create dynamic visualizations tailored to specific insights we want to uncover. Overall, this assignment and the course material have been instrumental in motivating us to select this dataset and approach, providing both the direction and tools for our project.
+
+\
 
 
 ## Initial questions
