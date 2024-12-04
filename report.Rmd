@@ -83,6 +83,7 @@ Using chi-squared test combining with heatmaps, we can find significant differen
 
 **2. Prediction of the Crime Serverity**\
 
+We designed a robust machine learning model using the **XGBoost algorithm** to predict the severity of crimes based on fundamental information, focusing on the "what," "when," and "where" of the crimes. **This classification enables better prioritization for resource allocation and decision-making in law enforcement.** The model's performance was rigorously evaluated through standard metrics, including **accuracy** and **ROC-AUC**, which measured the overall predictive capability, as well as **cumulative gains** and **lift**, which assessed its ability to rank high-severity crimes effectively. Additionally, the analysis highlighted the importance of temporal features (such as date and time) and demographic attributes (e.g., location and victim details) in determining crime severity. These insights provide valuable information about the underlying patterns and factors influencing crime, offering actionable intelligence for improving crime prevention strategies and resource management.
 
 
 ## Discussion
