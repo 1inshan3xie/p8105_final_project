@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Yunjia Liu" />
+
+
+<title>Predict the severity of crime</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    About
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="authors.html">About us</a>
+    </li>
+    <li>
+      <a href="report.html">About our project</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Analyze
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="victim.html">Victim Demographics</a>
+    </li>
+    <li>
+      <a href="time.html">Time Trend</a>
+    </li>
+    <li>
+      <a href="location.html">Location</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="https://tingyusally.shinyapps.io/shiny_dashboard___Tingyu_Qian/">Shiny App</a>
+</li>
+<li>
+  <a href="https://github.com/1inshan3xie/p8105_final_project">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Predict the severity of crime</h1>
+<h4 class="author">Yunjia Liu</h4>
+
+</div>
+
+
+<div id="prepare-the-dataset" class="section level2">
+<h2>Prepare the dataset</h2>
+<p>Here are some key steps in this part.<br />
+</p>
+<ul>
+<li>Some key transformation:<br />
+</li>
+<li>Converts serious_level to a binary numeric variable.<br />
+</li>
+<li>Extracts date and formats time for easier analysis. The
+<code>date_occ</code> column is transformed to retain only the date
+portion, while <code>time_occ</code> is formatted into a 4-digit time
+string (e.g., 930 becomes 0930).</li>
+<li>Missing values in the serious_level column are dropped to ensure
+data integrity</li>
+<li>The final predictors are
+<code>date_only</code>,<code>time_occ</code>,<code>area</code>,<code>serious_level</code>,<code>vict_age</code>,<code>vict_sex</code>,<code>vict_descent</code>,<code>rpt_dist_no</code>,<code>premis_cd</code>,<code>lat</code>,<code>lon</code>.
+These are primary and basic data that police can get</li>
+</ul>
+<p><strong>We are building this model to predict crime severity based on
+crime location, victim demographics, and crime time. Also, we are trying
+to use as less predictors as possible and only keep those primary data
+for any crime (e.g, minimum information for 911 operator to assess the
+situation and dispatch appropriate help). Social and legal support
+services can be deployed more effectively in areas or for demographics
+where severe crimes are predicted to occur.(eg, enhance vigilance for
+incidents more likely to escalate into severe crimes)</strong></p>
+<pre class="r"><code>crime_data = read.csv(file =&quot;./data/crime_data_LA.csv&quot;, row.names = 1) |&gt;
+  janitor::clean_names() |&gt;
+  rename(serious_level = part_1_2) |&gt;
+  mutate(
+    serious_level = as.numeric(as.factor(serious_level)) - 1, # Ensure binary
+    date_only = as.Date(mdy_hms(date_occ)),             # Extract only the date
+    # Step 3: Convert `time_occ` into a proper time format
+    time_occ = sprintf(&quot;%04d&quot;, time_occ)
+    )|&gt;
+  drop_na(serious_level) |&gt;
+  select(date_only,time_occ,area,serious_level,vict_age,vict_sex,vict_descent,rpt_dist_no,premis_cd,lat,lon)</code></pre>
+<p>We separate the data into train and test into 8:2 by stratified
+sampling so that we will reach at a balanced the train and test set to
+avoid any possible bias from the spliting. Also, Stratified sampling
+maintains the class distribution in both training and testing sets,
+ensuring the model is evaluated fairly on the test set.</p>
+<pre class="r"><code># Split the data
+set.seed(0)
+parts = createDataPartition(crime_data$serious_level, p = .8, list = FALSE)
+train = crime_data[parts, ]
+test = crime_data[-parts, ]
+
+# Define predictors and response
+target_col = &quot;serious_level&quot;
+
+train_x = data.matrix(train[, !colnames(train) %in% target_col])  # Features
+train_y = train[[target_col]]  # Target
+
+test_x = data.matrix(test[, !colnames(test) %in% target_col])  # Features
+test_y = test[[target_col]]  # Target
+
+xgb_train = xgb.DMatrix(data = train_x, label = train_y)
+xgb_test = xgb.DMatrix(data = test_x, label = test_y)</code></pre>
+<p>Distribution of crime severity in <strong>original
+dataset</strong>,<strong>training</strong> and <strong>testing
+dataset</strong> (<code>0</code> stands for serious crime and
+<code>1</code> stands for less serious)</p>
+<pre class="r"><code>crime_data_proportions &lt;- table(crime_data$serious_level) / nrow(crime_data)
+train_proportions &lt;- table(train$serious_level) / nrow(train)
+test_proportions &lt;- table(test$serious_level) / nrow(test)
+
+# Combine proportions into a single data frame
+combined_table &lt;- data.frame(
+  Serious_Level = names(crime_data_proportions),
+  Crime_Data = as.vector(crime_data_proportions),
+  Training_Data = as.vector(train_proportions),
+  Testing_Data = as.vector(test_proportions)
+)
+
+# Use knitr::kable to display the combined table
+knitr::kable(
+  combined_table,
+  col.names = c(&quot;Serious Level&quot;, &quot;Crime Data Proportion&quot;, &quot;Training Data Proportion&quot;, &quot;Testing Data Proportion&quot;),
+  caption = &quot;Distribution of Serious Levels Across Datasets&quot;
+)</code></pre>
+<table>
+<caption>Distribution of Serious Levels Across Datasets</caption>
+<colgroup>
+<col width="16%" />
+<col width="25%" />
+<col width="29%" />
+<col width="28%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Serious Level</th>
+<th align="right">Crime Data Proportion</th>
+<th align="right">Training Data Proportion</th>
+<th align="right">Testing Data Proportion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0</td>
+<td align="right">0.5957474</td>
+<td align="right">0.5959286</td>
+<td align="right">0.5950226</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="right">0.4042526</td>
+<td align="right">0.4040714</td>
+<td align="right">0.4049774</td>
+</tr>
+</tbody>
+</table>
+<p>The table suggests that stratified sampling has been done correctly
+and reached our expectation intending to aviod bias caused by dataset
+spliting.</p>
+</div>
+<div id="model-training-with-grid-search" class="section level2">
+<h2>Model Training with grid search</h2>
+<p>We save the model to the repository only the first time to avoid
+repeated calculation. Although we didn’t show the exact the parameters
+adjustment steps here, we use <strong>grid_search</strong> to find the
+parameter group with the best performance.</p>
+<pre class="r"><code># Train the final model with the best parameters
+if (!file.exists(&quot;pred_models/xgboost_model.model&quot;)) {
+  
+  param_grid = expand.grid(
+  max_depth = c(4, 6, 8),
+  eta = c(0.01, 0.1, 0.3),
+  min_child_weight = c(1, 3, 5),
+  subsample = c(0.7, 0.8, 0.9),
+  colsample_bytree = c(0.7, 0.8, 0.9)
+)
+
+# Placeholder for best parameters and best logloss
+best_logloss = Inf
+best_params = NULL
+
+# Grid search
+for (i in 1:nrow(param_grid)) {
+  params = list(
+    objective = &quot;binary:logistic&quot;,  
+    eval_metric = &quot;logloss&quot;,       # Ensure logloss is the evaluation metric
+    max_depth = param_grid$max_depth[i],
+    eta = param_grid$eta[i],
+    min_child_weight = param_grid$min_child_weight[i],
+    subsample = param_grid$subsample[i],
+    colsample_bytree = param_grid$colsample_bytree[i]
+  )
+  
+  # Watchlist for evaluation
+  watchlist = list(train = xgb_train, test = xgb_test)
+  
+  # Train the model
+  xgb_model = xgb.train(
+    params = params,
+    data = xgb_train,
+    nrounds = 300,
+    watchlist = watchlist,
+    verbose = 0
+  )
+  
+  # Extract test logloss
+  logloss = as.numeric(xgb_model$evaluation_log[nrow(xgb_model$evaluation_log), &quot;test_logloss&quot;])
+  
+  # Update best parameters if current logloss is better
+  if (logloss &lt; best_logloss) {
+    best_logloss = logloss
+    best_params = params
+  }
+}
+
+# Print the best parameters and logloss
+cat(&quot;Best Parameters:\n&quot;)
+print(best_params)
+cat(&quot;Best Logloss: &quot;, best_logloss, &quot;\n&quot;)
+
+  best_model = xgb.train(
+    params = best_params,
+    data = xgb_train,
+    nrounds = 300,
+    watchlist = watchlist,
+    verbose = 0
+  )
+  
+  xgb.save(best_model, &quot;pred_models/xgboost_model.model&quot;)
+  cat(&quot;Model saved to &#39;xgboost_model.model&#39;\n&quot;)
+} else {
+  best_model = xgb.load(&quot;pred_models/xgboost_model.model&quot;)
+  cat(&quot;Model loaded from &#39;xgboost_model.model&#39;\n&quot;)
+}</code></pre>
+<pre><code>## Model loaded from &#39;xgboost_model.model&#39;</code></pre>
+</div>
+<div id="model-evaluation" class="section level2">
+<h2>Model Evaluation</h2>
+<pre class="r"><code>predictions = predict(best_model, test_x, type = &quot;prob&quot;)  # Assuming `type = &quot;prob&quot;` gives probabilities
+
+pred = prediction(predictions, test_y)</code></pre>
+<div id="the-performance-table-of-the-model." class="section level4">
+<h4>The performance table of the model.</h4>
+<pre class="r"><code># Convert predicted probabilities to binary predictions using a 0.5 threshold
+pred_labels = ifelse(predictions &gt; 0.5, 1, 0)
+
+pred_labels = factor(pred_labels, levels = c(0, 1))
+
+# Create a confusion matrix
+conf_mat = confusionMatrix(pred_labels, factor(test_y))
+
+# Extract evaluation metrics from the confusion matrix
+accuracy = conf_mat$overall[&#39;Accuracy&#39;]
+precision = conf_mat$byClass[&#39;Pos Pred Value&#39;]
+recall = conf_mat$byClass[&#39;Sensitivity&#39;]
+f1_score = conf_mat$byClass[&#39;F1&#39;]
+
+# Calculate AUC (Area Under the Curve) using ROCR
+perf_auc = performance(pred, measure = &quot;auc&quot;)
+auc_value = perf_auc@y.values[[1]]
+
+# Combine metrics into a data frame
+metrics_table =
+  data.frame(
+    Metric = c(&quot;AUC&quot;, &quot;Accuracy&quot;, &quot;Precision&quot;, &quot;Recall&quot;, &quot;F1 Score&quot;),
+    Value = c(auc_value, accuracy, precision, recall, f1_score)
+)
+
+metrics_table |&gt; knitr::kable(digits = 4)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">Metric</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">AUC</td>
+<td align="right">0.8293</td>
+</tr>
+<tr class="even">
+<td align="left">Accuracy</td>
+<td align="left">Accuracy</td>
+<td align="right">0.7477</td>
+</tr>
+<tr class="odd">
+<td align="left">Pos Pred Value</td>
+<td align="left">Precision</td>
+<td align="right">0.7708</td>
+</tr>
+<tr class="even">
+<td align="left">Sensitivity</td>
+<td align="left">Recall</td>
+<td align="right">0.8198</td>
+</tr>
+<tr class="odd">
+<td align="left">F1</td>
+<td align="left">F1 Score</td>
+<td align="right">0.7945</td>
+</tr>
+</tbody>
+</table>
+<p>We made a table summarizing the evaluation metrics (AUC, Accuracy,
+Precision, Recall, F1 Score) is printed in a clean format.<br />
+</p>
+<ol style="list-style-type: decimal">
+<li>AUC (Area Under the Curve), valued at 0.8238, indicating that the
+model has strong discriminatory power to separate positive and negative
+classes (closer to 1 is ideal);<br />
+</li>
+<li>Accuracy, at 0.7441, reflects the model’s overall correctness, with
+approximately 74.4% of predictions being accurate;<br />
+</li>
+<li>Precision (Pos Pred Value), at 0.7676, reveals that ~76.8% of
+predicted positives are truly positive, indicating reliability in
+positive predictions;<br />
+</li>
+<li>Recall (Sensitivity), at 0.8173, measures the model’s ability to
+correctly identify ~81.7% of actual positives, showing strong
+sensitivity  </li>
+<li>the F1 Score, at 0.7917, balances precision and recall, making it
+suitable for imbalanced datasets.</li>
+</ol>
+</div>
+<div id="the-roc-curve-of-the-model" class="section level4">
+<h4>The ROC Curve of the model</h4>
+<p>The ROC Curve visually complements the table by plotting the True
+Positive Rate (Sensitivity) against the False Positive Rate (1 -
+Specificity) for different thresholds. The blue curve shows the model’s
+superior performance, remaining significantly above the green diagonal
+line, which represents random guessing, with the steepness and height of
+the curve near the top-left corner further validating its strength.</p>
+<pre class="r"><code># Plot the ROC Curve
+perf = performance(pred, measure = &quot;tpr&quot;, x.measure = &quot;fpr&quot;)
+plot(perf, col = &quot;#39568CFF&quot;, main = &quot;ROC Curve&quot;, lwd = 2.5)
+abline(a = 0, b = 1, col = &quot;#20A387FF&quot;, lty = 2, lwd = 2)</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="show-the-feature-importance-in-the-final-model."
+class="section level4">
+<h4>Show the feature importance in the final model.</h4>
+<p>This feature importance chart demonstrates that <strong>location type
+(premis_cd)</strong> and <strong>racial or ethnic background of the
+victim (vict_descent)</strong> are the most influential factors in
+predicting the model’s target variable. Meanwhile, features like the
+crime’s area or specific date contribute less significantly. This
+information is valuable for model interpretation and could guide future
+feature engineering or data collection priorities.</p>
+<pre class="r"><code>feature_names = colnames(train_x)
+importance_matrix = xgb.importance(feature_names = feature_names, model = best_model)
+
+# Convert the importance matrix to a data frame
+importance_df = importance_matrix[1:10, ]
+importance_df$Feature = factor(importance_df$Feature, levels = importance_df$Feature)
+
+# Plot using ggplot2
+ggplot(importance_df, aes(x = Feature, y = Gain, fill = Feature)) +
+  geom_bar(stat = &quot;identity&quot;) +
+  scale_fill_viridis_d() +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = &quot;Feature Importance&quot;, x = &quot;Features&quot;, y = &quot;Gain&quot;) +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="visualizing-cumulative-gains-and-lift-charts"
+class="section level4">
+<h4>Visualizing Cumulative Gains and Lift Charts</h4>
+<pre class="r"><code>test = 
+  test |&gt;
+  mutate(predicted_prob = predictions) |&gt;
+  arrange(desc(predicted_prob)) |&gt;
+  mutate(
+    cumulative_positive = cumsum(serious_level),  # Cumulative count of positives
+    cumulative_total = row_number(),             # Cumulative count of total records
+    cumulative_gain = cumulative_positive / sum(serious_level) * 100,  # Cumulative gain percentage
+    lift = cumulative_positive / cumulative_total / (sum(serious_level) / nrow(test))  # Lift
+  )
+
+# Step 2: Divide into 10 groups (Deciles) based on predicted probabilities
+test =
+  test |&gt;
+  mutate(decile = ntile(predicted_prob, 10))  # Create 10 equal groups based on predicted probabilities
+
+# Step 3: Calculate cumulative gains and lift for each Decile
+gain_lift = 
+  test |&gt;
+  group_by(decile) |&gt;
+  summarise(
+    total_in_decile = n(),
+    positives_in_decile = sum(serious_level),
+    cumulative_positives = max(cumulative_positive),
+    cumulative_gain = max(cumulative_gain),
+    lift = max(lift)
+  )</code></pre>
+<pre class="r"><code># Step 4: Plot Cumulative Gains Chart
+gains_plot =
+  ggplot(gain_lift, aes(x = decile, y = cumulative_gain)) +
+  geom_line(color =  &quot;#39568CFF&quot;) +
+  geom_point(color =  &quot;#39568CFF&quot;) +
+  labs(
+    title = &quot;Cumulative Gains Chart&quot;,
+    x = &quot;Decile&quot;,
+    y = &quot;Cumulative Gain (%)&quot;
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
+# Step 5: Plot Lift Chart
+lift_plot =
+  ggplot(gain_lift, aes(x = decile, y = lift)) +
+  geom_line(color = &quot;#1f9e89&quot;) +
+  geom_point(color = &quot;#1f9e89&quot;) +
+  labs(
+    title = &quot;Lift Chart&quot;,
+    x = &quot;Decile&quot;,
+    y = &quot;Lift&quot;
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+
+combined_plot = gains_plot + lift_plot
+
+print(combined_plot)</code></pre>
+<p><img src="prediction_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>For <strong>Cumulative Gains Chart</strong>, the curve starts at 0%
+and increases steeply for the initial deciles, indicating that the top
+deciles contain the highest proportion of the target class. The curve
+flattens after the top deciles, reflecting diminishing returns as more
+deciles are included.<br />
+</p>
+<p>For <strong>Lift Chart</strong>, lift values are highest for the
+first few deciles, showing the model’s strong ability to concentrate the
+target class in the top groups. Lift gradually decreases as more deciles
+are included, approaching the baseline (lift = 1) in the later
+deciles.<br />
+</p>
+<p><br />
+The steep cumulative gain in the initial deciles and high lift values
+indicate the model is effective in prioritizing the target class (e.g.,
+high-severity crimes) in the top percentile groups. These charts
+demonstrate that the model performs significantly better than random
+predictions in identifying and concentrating the target class.</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

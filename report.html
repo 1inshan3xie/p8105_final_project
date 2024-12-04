@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Yunjia Liu(yl5830), Linshan Xie(lx2346), Jianming Wang(jw4693), Yuwei Xia(yx2953), Tingyu Qian(tq2171)" />
+
+<meta name="date" content="2024-12-02" />
+
+<title>Data-Driven Insights for Community Safety in Los Angeles: Analyzing Crime Patterns and Trends in Recent Years</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    About
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="authors.html">About us</a>
+    </li>
+    <li>
+      <a href="report.html">About our project</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Analyze
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="victim.html">Victim Demographics</a>
+    </li>
+    <li>
+      <a href="time.html">Time Trend</a>
+    </li>
+    <li>
+      <a href="location.html">Location</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="prediction.html">Prediction</a>
+</li>
+<li>
+  <a href="https://tingyusally.shinyapps.io/shiny_dashboard___Tingyu_Qian/">Shiny App</a>
+</li>
+<li>
+  <a href="https://github.com/1inshan3xie/p8105_final_project">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Data-Driven Insights for Community Safety
+in Los Angeles: Analyzing Crime Patterns and Trends in Recent Years</h1>
+<h4 class="author">Yunjia Liu(yl5830), Linshan Xie(lx2346), Jianming
+Wang(jw4693), Yuwei Xia(yx2953), Tingyu Qian(tq2171)</h4>
+<h4 class="date">2024-12-02</h4>
+
+</div>
+
+
+<p><br />
+</p>
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>Los Angeles is a city of vibrant diversity and a lively urban
+landscape—but it’s also a city where the dynamics of crime can vary
+widely across neighborhoods, demographic groups, and even times of day.
+For law enforcement, policymakers, and community members alike,
+understanding these complex crime patterns is key to fostering safer and
+more resilient communities.<br />
+Our project dives into the Los Angeles Police Department crime dataset
+to uncover the “who, what, where, and when” of crime across LA’s diverse
+neighborhoods. We’re on a mission to decode the patterns of crime by
+exploring how different demographics, time frames, and locations shape
+the city’s unique crime profile. Whether it’s catching late-night
+trends, uncovering hotspots, or spotlighting demographic factors, we’re
+here to map the hidden story of LA’s crime scene and uncover what drives
+certain areas’ steady patterns—or sudden disruptions!<br />
+</p>
+<p><br />
+</p>
+</div>
+<div id="related-work" class="section level2">
+<h2>Related work</h2>
+<p>For HW5, we worked with data on homicides in 50 large U.S. cities.
+Our group found this dataset incredibly meaningful and decided to
+explore it further. To expand our research, we selected the “Crime
+Patterns and Trends in Recent Years - LA” dataset. This dataset includes
+latitude and longitude information, which inspired us to create a
+map-based visualization.<br />
+</p>
+<p><br />
+Building on the Shiny introduced in class, we realized that Shiny would
+be an excellent tool for analyzing and visualizing this dataset. By
+implementing interactive filters, we can create dynamic visualizations
+tailored to specific insights we want to uncover. Overall, this
+assignment and the course material have been instrumental in motivating
+us to select this dataset and approach, providing both the direction and
+tools for our project.<br />
+</p>
+<p><br />
+</p>
+<p>By utilizing advanced visualization and analysis tools, we aim to
+contribute to a deeper understanding of these issues, potentially
+helping policymakers and communities address crime more
+comprehensively.<br />
+</p>
+<p><br />
+</p>
+</div>
+<div id="initial-questions" class="section level2">
+<h2>Initial questions</h2>
+<p>We’re on a mission to decode the patterns of crime by exploring how
+different demographics, time frames, and locations shape the city’s
+unique crime profile. We are interested in:<br />
+<strong>1.</strong>What does the general demographic profile of victims
+look like? What’s the distribution of their races, genders and
+ages?<br />
+<strong>2.</strong>What is the distribution of crime across time
+dimensions? What if analyzing in terms of hours, weekdays, seasons and
+years?<br />
+<strong>3.</strong>How crime is associated with location information?
+What does the geographic maps and spatial distribution look like?<br />
+<br />
+</p>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The source dataset is the Los Angeles Police Department (LAPD) crime
+dataset, which contains all cases received by the LAPD from January 1,
+2020 to September 30, 2024, and contains 982638 observations and 28
+variables. After deleting variables such as weapon_cd, weapon_desc,
+etc., which contain a large number of missing values, the variables that
+are not needed are further deleted according to the needs of this
+project.The final data used for analysis contains the following
+variables:<br />
+<br />
+- <code>dr_no</code>: Unique identifier for each reported crime.<br />
+- <code>date_occ</code>: Date the crime occurred.<br />
+- <code>time_occ</code>: Time the crime occurred.<br />
+- <code>serious_level</code>: Indicates whether the crime is a “1”
+(serious) or “2” (less serious) offense. - <code>crime_type</code>:
+Description of the type of crime [eg.VEHICLE - STOLEN, VANDALISM -
+MISDEAMEANOR ($399 OR UNDER)]<br />
+- <code>vict_age</code>: Age of the victim.<br />
+- <code>vict_sex</code>: Sex of the victim.<br />
+- <code>vict_descent</code>: Racial or ethnic background of the
+victim.<br />
+- <code>rpt_dist_no</code>: Reporting district number.<br />
+- <code>premis_cd</code>: Premises code (e.g., residential,
+commercial).<br />
+- <code>premis_desc</code>: Concatenation of the sighting session day
+and month. - <code>status</code>: Description of the case status. (eg.
+Invest Cont, Juv Other).<br />
+- <code>lat</code>: Latitude coordinates of the crime location.<br />
+- <code>long</code>: Longitude coordinates of the crime location.<br />
+<br />
+</p>
+</div>
+<div id="exploratory-analysis" class="section level2">
+<h2>Exploratory analysis</h2>
+<p>The Exploratory analysis of our project is divided into three main
+sections: Victim Demographic, Time Trend, and Location.<br />
+<br />
+(victim_demo part)<br />
+In the Time Trend analysis section, we examine crime data from four
+temporal perspectives: yearly, seasonally, weekdays, and hourly. Bar
+plots are used to show the total number of crimes for each time period,
+with stacked bar plots comparing the counts of serious and less serious
+crimes. To further explore spatial variations, interactive line charts
+created with <code>Plotly</code> visualize the temporal trends in crime
+counts across different areas. Finally, line charts are also used to
+display changes in crime counts over time by crime type, providing
+insights into patterns of criminal activity.<br />
+<br />
+In the Location analysis section, according to the existing location
+information of crimes in LA, including the area names, the premises
+types, the geographic coordinators, the serious levels and the status of
+crimes occurring, we do some exploratory analysis to further understand
+the distribution of crimes. For visualization, we first use barplots to
+show the distribution of crimes and their serious levels(1 for serious
+and 2 for non-serious) in terms of their areas, premises and crime
+status. Areas like 77th Street and Central have large numbers of total
+crimes and serious criminal acts. What’s more, the crimes with continued
+investigations status are much more than other types of status. Using
+longitude and latitude information, we combine the visualization results
+with the geographic and interactive map to better reflect the different
+dimensions(serious level, crime status, etc.) of crimes
+information.<br />
+<br />
+After finished on analyzing patterns and trends in crime occurrences
+based on various time scales, such as yearly, seasonal, weekdays, and
+hourly, visualizing how crime evolves over time and across different
+dimensions, examing distribution of primary crime locations, exploring
+geospatial mapping data and modes of different crime types, as well as
+the number of crimes in each area. We decide to bring these insights to
+life, we chose to use Shiny to create an interactive dashboard. This
+allows users to apply filters based on different areas in LA and time
+trends, enabling them to observe crime counts and distributions
+dynamically.<br />
+<br />
+For the shiny, we specifically selected data from 2023 instead of
+including all available time periods. This decision was made because
+2023 represents the most recent year with complete data and is
+unaffected by the disruptions caused by the pandemic, ensuring a clearer
+and more relevant analysis.<br />
+<br />
+</p>
+</div>
+<div id="additional-analysis" class="section level2">
+<h2>Additional analysis</h2>
+<p><strong>1. Chi-Squared Test</strong><br />
+<strong>1.1 Chi-Squared Test Between Age Group and Crime
+Severity</strong><br />
+(xyw’s part)<br />
+<strong>1.2 Chi-Squared Test Between Different Time Period and Crime
+Severity</strong><br />
+The chi-squared statistic for yearl-difference is 387.8, p-value &lt;
+2.2e-16; while for seasonal difference, the X-squared = 58.749, p-value
+= 1.088e-12. For difference between weekdays, the X-squared = 262.23,
+whose p-value is less than 2.2e-16. And for the difference in different
+hour period of the day, the X-squared is 13747,p-value &lt; 2.2e-16. All
+these test result shows that there are significant differences in the
+distribution of severity of cases between different year, seasons,
+weekdays and hour periods of the day.<br />
+<br />
+<strong>1.3 Chi-Squared Test between serious levels and areas &amp;
+premise types</strong><br />
+Using chi-squared test combining with heatmaps, we can find significant
+differences of crime serious levels in different areas and premise
+types. Also, the premise types of crimes in different areas are also
+significantly different. In testing relationship between crime
+seriousness level and areas, the Chi-Square Statistic is 2858.69,
+indicating a very high dependence between serious level and area in LA.
+In testing relationship between the type of premises and the serious
+level of incidents, the Chi-Square statistic is 182154.31, indicating a
+very high dependence between serious level and premises types. In
+testing the relationship between the type of premises and different
+areas, the Chi-Square statistic is 179318.97, indicating a very high
+dependence between areas and premises types.<br />
+</p>
+<p><strong>2. Prediction of the Crime Serverity</strong><br />
+</p>
+</div>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
+</div>
+<div id="data-source" class="section level2">
+<h2>Data Source</h2>
+<p>This is a dataset of recent crime data from Los Angeles, covering a
+wide range of crime types, from violent crimes like homicide and assault
+to property crimes like theft and burglary. The data is carefully
+organized, providing insights into crime trends, geographic differences,
+and temporal patterns. The dataset can be downloaded directly from <a
+href="https://www.kaggle.com/datasets/arpitsinghaiml/u-s-crime-dataset/data"
+class="uri">https://www.kaggle.com/datasets/arpitsinghaiml/u-s-crime-dataset/data</a>.</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
