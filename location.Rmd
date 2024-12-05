@@ -210,7 +210,7 @@ The plot on the left shows what the distribution of the serious level of crimes 
 crime_plotly = crime_type |>
   filter(lat != 0,
          lon != 0)|>
-  mutate(text_label = str_c("Area: ", area_name, "\nPremises: ", Col1, "\nSerious Level: ", part_1_2, "\nStatus: ", status_desc))|>
+  mutate(text_label = str_c("\nType: ", Col1, "\nLevel: ", part_1_2, "\nStatus: ", status_desc))|>
   arrange(area_name)
 p1 <- ggplot(crime_plotly, aes(x = lon, y = lat, color = as.character(part_1_2))) +
   geom_point(alpha = 0.4, size = 0.3) +
@@ -251,10 +251,11 @@ Here I also provide a **interactive map for crimes in LA**, containing all kinds
 #         lon != 0,
 #         area_name == '77th Street'
 #         )|>
-#  mutate(text_label = str_c("Area: ", area_name, "\nPremises: ", Col1, "\nSerious Level: ", part_1_2, "\nStatus: ", status_desc)) |> 
+#  mutate(text_label = str_c("\nType: ", Col1, "\nLevel: ", part_1_2, "\nStatus: ", status_desc)) |> 
 #  plot_ly(
 #    x = ~lat, y = ~lon, type = "scatter", mode = "markers",
 #    color = ~factor(status_desc), alpha = 0.6, text = ~text_label, marker = list(size = 4))
+
 fig <- plot_ly()
 unique_areas <- unique(crime_plotly$area_name)
 # 添加每个区域的 trace
