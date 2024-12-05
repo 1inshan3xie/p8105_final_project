@@ -75,7 +75,7 @@ ggplot(melt(table1), aes(x = Var2, y = as.character(Var1), fill = value)) +
 This is a **heatmap** showing the relationship between crime seriousness level and areas in Los Angeles. Chi-Square Statistic is **2858.69**, indicating a very **high dependence** between variables (serious level and area). P-value is **0**, suggesting the observed distribution of crime seriousness by area is **statistically significant**(very unlikely to occur by random chance).
 Compared with less serious crimes, areas including Pacific and Central have larger numbers of more serious crimes, indicating serious crimes are more likely to occur in these areas. 
 
-##  what premises are offenders more likely to commit crimes? Are they severe?
+##  What premises are offenders more likely to commit crimes? Are they severe?
 
 ```{r, warning=FALSE}
 crime_prem = crime|>
