@@ -1,8 +1,8 @@
 ---
 title: "Data-Driven Insights for Community Safety in Los Angeles: Analyzing Crime Patterns and Trends in Recent Years"
 author: "Yunjia Liu(yl5830), Linshan Xie(lx2346), Jianming Wang(jw4693), Yuwei Xia(yx2953), Tingyu Qian(tq2171)"
-date: "2024-12-02"
-output: 
+date: "2024-12-04"
+output:   
   html_document:
     toc: true
     toc_float: true
