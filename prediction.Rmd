@@ -27,7 +27,7 @@ Here are some key steps in this part. \
 - Converts serious_level to a binary numeric variable. \
 - Extracts date and formats time for easier analysis. The `date_occ` column is transformed to retain only the date portion, while `time_occ` is formatted into a 4-digit time string (e.g., 930 becomes 0930).
 - Missing values in the serious_level column are dropped to ensure data integrity
-- The final predictors are `date_only`,`time_occ`,`area`,`serious_level`,`vict_age`,`vict_sex`,`vict_descent`,`rpt_dist_no`,`premis_cd`,`lat`,`lon`. These are primary and basic data that police can get
+- The final predictors are `date_only`,`time_occ`,`area`,`serious_level`,`vict_age`,`vict_sex`,`vict_descent`,`rpt_dist_no`,`premis_cd`,`lat`,`lon`.
 
 **We are building this model to predict crime severity based on crime location, victim demographics, and crime time. Also, we are trying to use as less predictors as possible and only keep those primary data for any crime (e.g, minimum information for 911 operator to assess the situation and dispatch appropriate help). Social and legal support services can be deployed more effectively in areas or for demographics where severe crimes are predicted to occur.(eg, enhance vigilance for incidents more likely to escalate into severe crimes)**
 
